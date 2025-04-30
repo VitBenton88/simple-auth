@@ -1,8 +1,10 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const { login } = require('./authService').default;
-const { verify } = require('./jwtService');
+import express from 'express';
+import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
+import { default as authService } from './authService';
+import { verify } from './jwtService';
+
+const { login } = authService;
 
 const app = express();
 app.use(bodyParser.json());

@@ -1,0 +1,48 @@
+const Database = require('better-sqlite3');
+const crypto = require('crypto');
+
+const db = new Database('users.db');
+
+// Create users table
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    hash TEXT NOT NULL,
+    salt TEXT NOT NULL
+  )
+`).run();
+
+// Hashing function using pbkdf2
+function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
+  const hash = crypto.pbkdf2Sync(password, salt, 100_000, 64, 'sha512').toString('hex');
+  return { salt, hash };
+}
+
+// Register a user
+function register(id, password) {
+  const { salt, hash } = hashPassword(password);
+  const stmt = db.prepare('INSERT INTO users (id, hash, salt) VALUES (?, ?, ?)');
+  try {
+    stmt.run(id, hash, salt);
+    console.log(`User "${id}" registered.`);
+  } catch (e) {
+    console.error('Registration failed:', e.message);
+  }
+}
+
+// Login a user
+function login(id, password) {
+  const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
+  const user = stmt.get(id);
+  if (!user) return false;
+
+  const { hash } = hashPassword(password, user.salt);
+  if (hash !== user.hash) return 'Invalid password.';
+
+  return {
+    message: `Login successful for "${id}".`,
+    token: createToken(id)
+  };
+}
+
+module.exports = { register, login };

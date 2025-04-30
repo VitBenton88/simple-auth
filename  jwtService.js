@@ -1,4 +1,4 @@
-const crypto = require('crypto');
+import { createHmac } from 'crypto';
 
 // Shared secret for signing
 const SECRET = 'super-secret-key'; // In production, store securely
@@ -10,8 +10,7 @@ const sign = (header, payload) => {
   const headerEncoded = base64url(JSON.stringify(header));
   const payloadEncoded = base64url(JSON.stringify(payload));
   const data = `${headerEncoded}.${payloadEncoded}`;
-  const signature = crypto
-    .createHmac('sha256', SECRET)
+  const signature = createHmac('sha256', SECRET)
     .update(data)
     .digest('base64url');
 
@@ -23,8 +22,7 @@ const verify = (token) => {
   if (!headerEncoded || !payloadEncoded || !signature) return null;
 
   const data = `${headerEncoded}.${payloadEncoded}`;
-  const expectedSig = crypto
-    .createHmac('sha256', SECRET)
+  const expectedSig = createHmac('sha256', SECRET)
     .update(data)
     .digest('base64url');
 
@@ -45,4 +43,4 @@ const createToken = (id, expiresInSec = 3600) => {
   return sign({ alg: 'HS256', typ: 'JWT' }, payload);
 };
 
-module.exports = { createToken, verify };
+export default { createToken, verify };

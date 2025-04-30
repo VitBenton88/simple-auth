@@ -9,6 +9,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=23.11.0"
+  },
   "dependencies": {
     "better-sqlite3": "^11.9.1",
     "cookie-parser": "^1.4.7",

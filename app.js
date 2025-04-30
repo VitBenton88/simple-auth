@@ -1,10 +1,11 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import { default as authService } from './authService';
-import { verify } from './jwtService';
+import { default as authService } from './authService.js';
+import { default as jwtService } from './jwtService.js';
 
 const { login } = authService;
+const { verify } = jwtService;
 
 const app = express();
 app.use(bodyParser.json());

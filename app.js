@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const { login } = require('./authService');
+const { login } = require('./authService').default;
 const { verify } = require('./jwtService');
 
 const app = express();

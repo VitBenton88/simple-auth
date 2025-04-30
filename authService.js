@@ -1,5 +1,5 @@
-const Database = require('better-sqlite3');
-const crypto = require('crypto');
+import Database from 'better-sqlite3';
+import { randomBytes, pbkdf2Sync } from 'crypto';
 
 const db = new Database('users.db');
 
@@ -13,8 +13,8 @@ db.prepare(`
 `).run();
 
 // Hashing function using pbkdf2
-function hashPassword(password, salt = crypto.randomBytes(16).toString('hex')) {
-  const hash = crypto.pbkdf2Sync(password, salt, 100_000, 64, 'sha512').toString('hex');
+function hashPassword(password, salt = randomBytes(16).toString('hex')) {
+  const hash = pbkdf2Sync(password, salt, 100_000, 64, 'sha512').toString('hex');
   return { salt, hash };
 }
 
@@ -45,4 +45,4 @@ function login(id, password) {
   };
 }
 
-module.exports = { register, login };
+export default { register, login };

@@ -25,3 +25,6 @@ Thumbs.db
 
 # Optional eslint cache
 .eslintcache
+
+# DB
+*.db

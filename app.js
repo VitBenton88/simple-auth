@@ -11,6 +11,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cookieParser());
 
+// Insert this middleware for protected routes
 function requireAuth(req, res, next) {
   const token = req.cookies.token;
   const payload = verify(token);

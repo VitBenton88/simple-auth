@@ -7,6 +7,7 @@ A minimal Express-based authentication server.
 - JSON body parsing via `body-parser`
 - Cookie handling via `cookie-parser`
 - Designed for extensibility (add routes for login, logout, etc.)
+- Serverless DB with SQLite!
 
 ## Getting Started
 

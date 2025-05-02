@@ -72,7 +72,9 @@ router.delete('/delete/:id', (req, res) => {
 
 // GET /me
 router.get('/me', requireAuth, (req, res) => {
-  res.json({ message: `Hello, ${req.user.id}` });
+  const { id } = req.user;
+
+  res.json({ email: id });
 });
 
 // POST /logout

@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { randomBytes, pbkdf2Sync } from 'crypto';
-import jwtService from '../services/jwt.js';
+import jwtService from './jwt.js';
 
 const db = new Database('users.db');
 const { createToken } = jwtService;

@@ -4,7 +4,7 @@ import jwtService from '../services/jwt.js';
 
 const router = express.Router();
 
-const { deleteUserById, login, register } = authService;
+const { deleteUserById, getAllUsers, login, register } = authService;
 const { verify } = jwtService;
 
 // Auth middleware
@@ -54,8 +54,18 @@ router.post('/register', (req, res) => {
   }
 });
 
+// POST /logout
+router.post('/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: false,
+    sameSite: 'strict',
+  });
+  res.json({ message: 'Logged out successfully.' });
+});
+
 // DELETE /delete
-router.delete('/delete/:id', (req, res) => {
+router.delete('/delete/:id', requireAuth, (req, res) => {
   const { id } = req.params;
 
   if (!id) {
@@ -77,14 +87,14 @@ router.get('/me', requireAuth, (req, res) => {
   res.json({ email: id });
 });
 
-// POST /logout
-router.post('/logout', (req, res) => {
-  res.clearCookie('token', {
-    httpOnly: true,
-    secure: false,
-    sameSite: 'strict',
-  });
-  res.json({ message: 'Logged out successfully.' });
+// GET /users
+router.get('/users', requireAuth, (req, res) => {
+  try {
+    const users = getAllUsers();
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch users.' });
+  }
 });
 
 export default router;

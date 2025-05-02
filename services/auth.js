@@ -57,6 +57,11 @@ function login(email, password) {
   return false
 }
 
+// Get all users
+function getAllUsers() {
+  return db.prepare('SELECT id, email, created FROM users').all();
+}
+
 // Delete a user
 function deleteUserById(id) {
   const stmt = db.prepare('DELETE FROM users WHERE id = ?');
@@ -75,4 +80,4 @@ function deleteUserById(id) {
   }
 }
 
-export default { deleteUserById, login, register };
+export default { deleteUserById, getAllUsers, login, register };

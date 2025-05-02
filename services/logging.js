@@ -1,0 +1,28 @@
+import Database from 'better-sqlite3';
+
+const db = new Database('logs.db');
+
+// Create logs table
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT,
+    success INTEGER NOT NULL, -- 0 or 1
+    ip TEXT,
+    timestamp TEXT NOT NULL DEFAULT (datetime('now')),
+    message TEXT
+  )
+`).run();
+
+function create() {
+  const stmt = db.prepare('INSERT INTO logs (email, success, message) VALUES (?, ?, ?)');
+
+  try {
+    stmt.run(email, success, message);
+  } catch (e) {
+    console.error('Log creation failed:', e.message);
+    throw new Error('Log creation failed.', { cause: e.message });
+  }
+};
+
+export default { create };

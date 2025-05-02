@@ -1,7 +1,9 @@
 import Database from 'better-sqlite3';
 import { randomBytes, pbkdf2Sync } from 'crypto';
+import jwtService from '../services/jwt.js';
 
 const db = new Database('users.db');
+const { createToken } = jwtService;
 
 // Create users table
 db.prepare(`
@@ -35,7 +37,7 @@ function register(email, password) {
 
 // Login a user
 function login(email, password) {
-  const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
+  const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
   const user = stmt.get(email);
   if (!user) return false;
 

@@ -1,6 +1,6 @@
 # Simple Auth
 
-A minimal Express-based authentication server.
+A minimal Express-based authentication server. For a minimal frontend UI that is compatible with this api, [refer here](https://github.com/VitBenton88/login-ui).
 
 ## Features
 

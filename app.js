@@ -12,5 +12,5 @@ app.use(authRoutes);
 const PORT = 3000;
 
 app.listen(PORT, () => {
-  console.log(`Auth server running at http://localhost:${PORT}`);
+  console.log(`Login service running at http://localhost:${PORT}`);
 });

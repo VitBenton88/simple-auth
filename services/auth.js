@@ -6,7 +6,8 @@ const db = new Database('users.db');
 // Create users table
 db.prepare(`
   CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
     hash TEXT NOT NULL,
     salt TEXT NOT NULL,
     created TEXT NOT NULL DEFAULT (datetime('now'))
@@ -20,7 +21,7 @@ function hashPassword(password, salt = randomBytes(16).toString('hex')) {
 }
 
 // Register a user
-function register(id, password) {
+function register(email, password) {
   const { salt, hash } = hashPassword(password);
   const stmt = db.prepare('INSERT INTO users (id, hash, salt) VALUES (?, ?, ?)');
   try {
@@ -32,17 +33,17 @@ function register(id, password) {
 }
 
 // Login a user
-function login(id, password) {
+function login(email, password) {
   const stmt = db.prepare('SELECT * FROM users WHERE id = ?');
-  const user = stmt.get(id);
+  const user = stmt.get(email);
   if (!user) return false;
 
   const { hash } = hashPassword(password, user.salt);
   if (hash !== user.hash) return 'Invalid password.';
 
   return {
-    message: `Login successful for "${id}".`,
-    token: createToken(id)
+    message: `Login successful for "${email}".`,
+    token: createToken(email)
   };
 }
 

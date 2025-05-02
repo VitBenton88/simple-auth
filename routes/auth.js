@@ -4,22 +4,25 @@ import jwtService from '../services/jwt.js';
 
 const router = express.Router();
 
-const { login } = authService;
+const { login, register } = authService;
 const { verify } = jwtService;
 
 // Auth middleware
 function requireAuth(req, res, next) {
   const token = req.cookies.token;
   const payload = verify(token);
+
   if (!payload) return res.status(401).json({ error: 'Unauthorized' });
+
   req.user = { id: payload.sub };
   next();
 }
 
 // POST /login
 router.post('/login', (req, res) => {
-  const { id, password } = req.body;
-  const result = login(id, password);
+  const { email, password } = req.body;
+  const result = login(email, password);
+
   if (!result || typeof result === 'string') {
     return res.status(401).json({ error: result || 'Invalid credentials' });
   }
@@ -36,14 +39,14 @@ router.post('/login', (req, res) => {
 
 // POST /register
 router.post('/register', (req, res) => {
-  const { id, password } = req.body;
-  if (!id || !password) {
-    return res.status(400).json({ error: 'ID and password are required' });
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
   }
 
   try {
-    register(id, password);
-    res.status(201).json({ message: `User "${id}" registered successfully.` });
+    register(email, password);
+    res.status(201).json({ message: `User "${email}" registered successfully.` });
   } catch (err) {
     res.status(409).json({ error: 'User already exists or registration failed.' });
   }

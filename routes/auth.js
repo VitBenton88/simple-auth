@@ -1,6 +1,6 @@
 import express from 'express';
-import authService from '../authService.js';
-import jwtService from '../jwtService.js';
+import authService from '../services/auth.js';
+import jwtService from '../services/jwt.js';
 
 const router = express.Router();
 

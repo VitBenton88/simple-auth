@@ -19,6 +19,7 @@ db.prepare(`
 // Hashing function using pbkdf2
 function hashPassword(password, salt = randomBytes(16).toString('hex')) {
   const hash = pbkdf2Sync(password, salt, 100_000, 64, 'sha512').toString('hex');
+
   return { salt, hash };
 }
 
@@ -29,6 +30,7 @@ function register(email, password) {
 
   try {
     stmt.run(email, hash, salt);
+
     console.log(`User "${email}" registered.`);
   } catch (e) {
     console.error('Registration failed:', e.message);
@@ -40,15 +42,37 @@ function register(email, password) {
 function login(email, password) {
   const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
   const user = stmt.get(email);
-  if (!user) return false;
 
-  const { hash } = hashPassword(password, user.salt);
-  if (hash !== user.hash) return 'Invalid password.';
+  if (user) {
+    const { hash } = hashPassword(password, user.salt);
 
-  return {
-    message: `Login successful for "${email}".`,
-    token: createToken(email)
-  };
+    if (hash !== user.hash) return 'Invalid password.';
+  
+    return {
+      message: `Login successful for "${email}".`,
+      token: createToken(email)
+    };
+  }
+
+  return false
 }
 
-export default { register, login };
+// Delete a user
+function deleteUserById(id) {
+  const stmt = db.prepare('DELETE FROM users WHERE id = ?');
+
+  try {
+    const info = stmt.run(id);
+
+    if (info.changes === 0) {
+      throw new Error(`No user found with id "${id}".`);
+    }
+
+    console.log(`User with id "${id}" deleted.`);
+  } catch (e) {
+    console.error('Deletion failed:', e.message);
+    throw new Error('User deletion failed.', { cause: e.message });
+  }
+}
+
+export default { deleteUserById, login, register };

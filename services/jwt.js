@@ -18,6 +18,8 @@ const sign = (header, payload) => {
 };
 
 const verify = (token) => {
+  if (!token) return null;
+
   const [headerEncoded, payloadEncoded, signature] = token.split('.');
   if (!headerEncoded || !payloadEncoded || !signature) return null;
 

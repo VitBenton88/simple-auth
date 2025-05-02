@@ -23,12 +23,13 @@ function hashPassword(password, salt = randomBytes(16).toString('hex')) {
 // Register a user
 function register(email, password) {
   const { salt, hash } = hashPassword(password);
-  const stmt = db.prepare('INSERT INTO users (id, hash, salt) VALUES (?, ?, ?)');
+  const stmt = db.prepare('INSERT INTO users (email, hash, salt) VALUES (?, ?, ?)');
   try {
-    stmt.run(id, hash, salt);
-    console.log(`User "${id}" registered.`);
+    stmt.run(email, hash, salt);
+    console.log(`User "${email}" registered.`);
   } catch (e) {
     console.error('Registration failed:', e.message);
+    throw new Error(`'Registration failed:', ${e.message}`);
   }
 }
 

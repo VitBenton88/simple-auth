@@ -30,6 +30,7 @@ const verify = (token) => {
 
   const payload = JSON.parse(Buffer.from(payloadEncoded, 'base64url').toString());
   const now = Math.floor(Date.now() / 1000);
+
   return (payload.exp && payload.exp < now) ? null : payload;
 };
 
@@ -40,6 +41,7 @@ const createToken = (id, expiresInSec = 3600) => {
     iat: now,
     exp: now + expiresInSec
   };
+
   return sign({ alg: 'HS256', typ: 'JWT' }, payload);
 };
 

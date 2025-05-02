@@ -12,7 +12,9 @@ function requireAuth(req, res, next) {
   const token = req.cookies.token;
   const payload = verify(token);
 
-  if (!payload) return res.status(401).json({ error: 'Unauthorized' });
+  if (!payload) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  };
 
   req.user = { id: payload.sub };
   next();

@@ -8,7 +8,8 @@ db.prepare(`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     hash TEXT NOT NULL,
-    salt TEXT NOT NULL
+    salt TEXT NOT NULL,
+    created TEXT NOT NULL DEFAULT (datetime('now'))
   )
 `).run();
 

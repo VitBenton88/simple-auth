@@ -15,6 +15,10 @@ A minimal Express-based authentication server. For a minimal frontend UI that is
 - [Node.js](https://nodejs.org/) (v23+ recommended)
 - npm or yarn
 
+### Recommendations
+- [Update this.](https://github.com/VitBenton88/simple-auth/blob/9cfaf038013d9f14f1e146609e6dc4128418efef/services/jwt.js#L4)
+- Use middleware for protecting routes as needed. [See here.](https://github.com/VitBenton88/simple-auth/blob/9cfaf038013d9f14f1e146609e6dc4128418efef/routes/auth.js#L11)
+
 ### Installation
 
 ```bash

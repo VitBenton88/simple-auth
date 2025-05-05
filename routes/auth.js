@@ -21,7 +21,7 @@ function requireAuth(req, res, next) {
 }
 
 // POST /login
-router.post('/login', (req, res) => {
+router.post('/api/login', (req, res) => {
   const { email, password } = req.body;
   const result = login(email, password);
 
@@ -40,7 +40,7 @@ router.post('/login', (req, res) => {
 });
 
 // POST /register
-router.post('/register', (req, res) => {
+router.post('/api/register', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -55,7 +55,7 @@ router.post('/register', (req, res) => {
 });
 
 // POST /logout
-router.post('/logout', (req, res) => {
+router.post('/api/logout', (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
     secure: false,
@@ -65,7 +65,7 @@ router.post('/logout', (req, res) => {
 });
 
 // DELETE /delete
-router.delete('/delete/:id', requireAuth, (req, res) => {
+router.delete('/api/delete/:id', requireAuth, (req, res) => {
   const { id } = req.params;
 
   if (!id) {
@@ -81,14 +81,14 @@ router.delete('/delete/:id', requireAuth, (req, res) => {
 });
 
 // GET /me
-router.get('/me', requireAuth, (req, res) => {
+router.get('/api/me', requireAuth, (req, res) => {
   const { id } = req.user;
 
   res.json({ email: id });
 });
 
 // GET /users
-router.get('/users', requireAuth, (req, res) => {
+router.get('/api/users', requireAuth, (req, res) => {
   try {
     const users = getAllUsers();
     res.json(users);

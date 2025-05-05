@@ -1,9 +1,6 @@
 import Database from 'better-sqlite3';
-import { randomBytes, pbkdf2Sync } from 'crypto';
-import jwtService from './jwt.js';
 
 const db = new Database('users.db');
-const { createToken } = jwtService;
 
 // Create users table
 db.prepare(`
@@ -15,13 +12,6 @@ db.prepare(`
     created TEXT NOT NULL DEFAULT (datetime('now'))
   )
 `).run();
-
-// Hashing function using pbkdf2
-function hashPassword(password, salt = randomBytes(16).toString('hex')) {
-  const hash = pbkdf2Sync(password, salt, 100_000, 64, 'sha512').toString('hex');
-
-  return { salt, hash };
-}
 
 // Register a user
 function register(email, password) {
@@ -39,45 +29,22 @@ function register(email, password) {
 }
 
 // Login a user
-function login(email, password) {
-  const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
-  const user = stmt.get(email);
+function login(req, res) {
+  const { email, password } = req.body;
+  const ip = req.ip;
 
-  if (user) {
-    const { hash } = hashPassword(password, user.salt);
+  // Dummy auth logic
+  const user = { id: 123, email: 'test@example.com', password: 'secret' };
 
-    if (hash !== user.hash) return 'Invalid password.';
-  
-    return {
-      message: `Login successful for "${email}".`,
-      token: createToken(email)
-    };
+  if (email === user.email && password === user.password) {
+    const token = jwt.createToken(user.id);
+
+    logging.create(email, 1, 'Login successful');
+    res.json({ token });
+  } else {
+    logging.create(email, 0, 'Login failed: invalid credentials');
+    res.status(401).json({ error: 'Invalid credentials' });
   }
+};
 
-  return false
-}
-
-// Get all users
-function getAllUsers() {
-  return db.prepare('SELECT id, email, created FROM users').all();
-}
-
-// Delete a user
-function deleteUserById(id) {
-  const stmt = db.prepare('DELETE FROM users WHERE id = ?');
-
-  try {
-    const info = stmt.run(id);
-
-    if (info.changes === 0) {
-      throw new Error(`No user found with id "${id}".`);
-    }
-
-    console.log(`User with id "${id}" deleted.`);
-  } catch (e) {
-    console.error('Deletion failed:', e.message);
-    throw new Error('User deletion failed.', { cause: e.message });
-  }
-}
-
-export default { deleteUserById, getAllUsers, login, register };
+export default { login, register };

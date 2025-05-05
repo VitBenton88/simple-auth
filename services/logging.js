@@ -24,4 +24,13 @@ function create(email, success, message) {
   }
 }
 
-export default { create };
+function getAll() {
+  try {
+    return db.prepare('SELECT * FROM logs ORDER BY timestamp DESC').all();
+  } catch (e) {
+    console.error('Failed to fetch logs: ', e.message);
+    return [];
+  }
+}
+
+export default { create, getAll };

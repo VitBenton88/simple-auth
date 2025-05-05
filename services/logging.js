@@ -8,7 +8,6 @@ db.prepare(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT,
     success INTEGER NOT NULL, -- 0 or 1
-    ip TEXT,
     timestamp TEXT NOT NULL DEFAULT (datetime('now')),
     message TEXT
   )

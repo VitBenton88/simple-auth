@@ -1,33 +1,24 @@
 import express from 'express';
 import authService from '../services/auth.js';
+import logging from '../services/logging.js';
 import jwtService from '../services/jwt.js';
 
 const router = express.Router();
 
-const { deleteUserById, getAllUsers, login, register } = authService;
-const { verify } = jwtService;
-
-// Auth middleware
-function requireAuth(req, res, next) {
-  const token = req.cookies.token;
-  const payload = verify(token);
-
-  if (!payload) {
-    return res.status(401).json({ error: 'Unauthorized' })
-  };
-
-  req.user = { id: payload.sub };
-  next();
-}
+const { login, register } = authService;
+const { requireAuth } = jwtService;
 
 // POST /login
-router.post('/api/login', (req, res) => {
+router.post('/login', (req, res) => {
   const { email, password } = req.body;
   const result = login(email, password);
 
   if (!result || typeof result === 'string') {
+    logging.create(email, 0, result || 'Invalid credentials');
     return res.status(401).json({ error: result || 'Invalid credentials' });
   }
+
+  logging.create(email, 1, 'Login successful');
 
   res.cookie('token', result.token, {
     httpOnly: true,
@@ -40,7 +31,7 @@ router.post('/api/login', (req, res) => {
 });
 
 // POST /register
-router.post('/api/register', (req, res) => {
+router.post('/register', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required' });
@@ -48,14 +39,18 @@ router.post('/api/register', (req, res) => {
 
   try {
     register(email, password);
+    logging.create(email, 1, 'Registration successful');
     res.status(201).json({ message: `User "${email}" registered successfully.` });
   } catch (err) {
+    logging.create(email, 0, `Registration failed: ${err.message}`);
     res.status(409).json({ error: 'User already exists or registration failed.' });
-  }
+  } finally {}
 });
 
 // POST /logout
-router.post('/api/logout', (req, res) => {
+router.post('/logout', (req, res) => {
+  logging.create(req.user?.email || 'Unknown', 1, 'User logged out');
+
   res.clearCookie('token', {
     httpOnly: true,
     secure: false,
@@ -64,37 +59,11 @@ router.post('/api/logout', (req, res) => {
   res.json({ message: 'Logged out successfully.' });
 });
 
-// DELETE /delete
-router.delete('/api/delete/:id', requireAuth, (req, res) => {
-  const { id } = req.params;
-
-  if (!id) {
-    return res.status(400).json({ error: 'User ID is required.' });
-  }
-
-  try {
-    deleteUserById(id);
-    res.status(200).json({ message: `User with ID "${id}" deleted successfully.` });
-  } catch (err) {
-    res.status(404).json({ error: err.message || 'User not found or deletion failed.' });
-  }
-});
-
 // GET /me
-router.get('/api/me', requireAuth, (req, res) => {
+router.get('/me', requireAuth, (req, res) => {
   const { id } = req.user;
 
   res.json({ email: id });
-});
-
-// GET /users
-router.get('/api/users', requireAuth, (req, res) => {
-  try {
-    const users = getAllUsers();
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch users.' });
-  }
 });
 
 export default router;

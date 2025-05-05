@@ -34,7 +34,8 @@ function login(email, password) {
   const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
   const user = stmt.get(email);
 
-  if (user) {
+
+  if (user?.id) {
     const { hash } = helpers.hashPassword(password, user.salt);
 
     if (hash !== user.hash) return 'Invalid password.';

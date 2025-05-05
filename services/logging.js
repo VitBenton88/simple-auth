@@ -14,15 +14,14 @@ db.prepare(`
   )
 `).run();
 
-function create() {
+function create(email, success, message) {
   const stmt = db.prepare('INSERT INTO logs (email, success, message) VALUES (?, ?, ?)');
 
   try {
     stmt.run(email, success, message);
   } catch (e) {
-    console.error('Log creation failed:', e.message);
-    throw new Error('Log creation failed.', { cause: e.message });
+    console.error('Log creation failed: ', e.message);
   }
-};
+}
 
 export default { create };

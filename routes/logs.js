@@ -7,7 +7,7 @@ const router = express.Router();
 const { requireAuth } = jwtService;
 
 // GET /users
-router.get('/logs', requireAuth, (req, res) => {
+router.get('/getAll', requireAuth, (req, res) => {
   try {
     const logs = logging.getAll();
     res.json(logs);

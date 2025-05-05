@@ -1,4 +1,6 @@
 import Database from 'better-sqlite3';
+import jwtServices from '../services/jwt.js';
+import helpers from '../util/helpers.js';
 
 const db = new Database('users.db');
 
@@ -15,7 +17,7 @@ db.prepare(`
 
 // Register a user
 function register(email, password) {
-  const { salt, hash } = hashPassword(password);
+  const { salt, hash } = helpers.hashPassword(password);
   const stmt = db.prepare('INSERT INTO users (email, hash, salt) VALUES (?, ?, ?)');
 
   try {
@@ -28,23 +30,22 @@ function register(email, password) {
   }
 }
 
-// Login a user
-function login(req, res) {
-  const { email, password } = req.body;
-  const ip = req.ip;
+function login(email, password) {
+  const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
+  const user = stmt.get(email);
 
-  // Dummy auth logic
-  const user = { id: 123, email: 'test@example.com', password: 'secret' };
+  if (user) {
+    const { hash } = helpers.hashPassword(password, user.salt);
 
-  if (email === user.email && password === user.password) {
-    const token = jwt.createToken(user.id);
-
-    logging.create(email, 1, 'Login successful');
-    res.json({ token });
-  } else {
-    logging.create(email, 0, 'Login failed: invalid credentials');
-    res.status(401).json({ error: 'Invalid credentials' });
+    if (hash !== user.hash) return 'Invalid password.';
+  
+    return {
+      message: `Login successful for "${email}".`,
+      token: jwtServices.createToken(email)
+    };
   }
-};
+
+  return false
+}
 
 export default { login, register };

@@ -14,12 +14,12 @@ db.prepare(`
 `).run();
 
 // Get all users
-function getAllUsers() {
+function getAll() {
   return db.prepare('SELECT id, email, created FROM users').all();
 }
 
 // Delete a user
-function deleteUserById(id) {
+function deleteById(id) {
   const stmt = db.prepare('DELETE FROM users WHERE id = ?');
 
   try {
@@ -36,4 +36,4 @@ function deleteUserById(id) {
   }
 }
 
-export default { deleteUserById, getAllUsers };
+export default { deleteById, getAll };

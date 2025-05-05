@@ -5,13 +5,13 @@ import usersService from '../services/users.js';
 
 const router = express.Router();
 
-const { getAllUsers, deleteUserById } = usersService;
+const { getAll, deleteById } = usersService;
 const { requireAuth } = jwtService;
 
 // GET /users
-router.get('/getAll', requireAuth, (req, res) => {
+router.get('/getAll', requireAuth, (_, res) => {
   try {
-    const users = getAllUsers();
+    const users = getAll();
     res.json(users);
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch users.' });
@@ -27,7 +27,7 @@ router.delete('/delete/:id', requireAuth, (req, res) => {
   }
 
   try {
-    deleteUserById(id);
+    deleteById(id);
     logging.create(req.user.id, 1, `Deleted user ID: ${id}`);
     res.status(200).json({ message: `User with ID "${id}" deleted successfully.` });
   } catch (err) {

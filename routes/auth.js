@@ -1,7 +1,8 @@
 import express from 'express';
 import { login } from '../services/auth.js';
 import { create as createLog } from '../services/logging.js';
-import { createTokenPair, requireAuth } from '../services/jwt.js';
+import { createTokenPair } from '../services/jwt.js';
+import { requireAuth } from './middleware.js';
 import { isValidEmail } from '../util/validation.js'
 
 const router = express.Router();

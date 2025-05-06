@@ -1,6 +1,6 @@
 import express from 'express';
 import {create as createLog} from '../services/logging.js';
-import { requireAuth } from '../services/jwt.js';
+import { requireAuth } from './middleware.js';
 import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
 import { isValidEmail } from '../util/validation.js'
 

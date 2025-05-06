@@ -1,6 +1,6 @@
 import express from 'express';
 import { getById, getAll } from '../services/logging.js';
-import { requireAuth } from '../services/jwt.js';
+import { requireAuth } from './middleware.js';
 
 const router = express.Router();
 

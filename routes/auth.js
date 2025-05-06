@@ -36,13 +36,14 @@ router.post('/login', (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  createLog(req.user?.email || 'Unknown', 1, 'User logged out');
+  createLog('Unknown', 1, 'User logged out');
 
-  res.clearCookie('token', {
+  res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: false,
     sameSite: 'strict',
   });
+
   res.json({ message: 'Logged out successfully.' });
 });
 

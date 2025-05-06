@@ -8,7 +8,7 @@ const router = express.Router();
 const { deleteById, getAll, getById, updateEmailById } = usersService;
 const { requireAuth } = jwtService;
 
-router.get('/:id', requireAuth, (req, res) => {
+router.get('{/:id}', requireAuth, (req, res) => {
   try {
     if (req.params.id) {
       const user = getById(req.params.id);

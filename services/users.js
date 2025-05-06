@@ -12,15 +12,15 @@ db.prepare(`
   )
 `).run();
 
-function getAll() {
+export function getAll() {
   return db.prepare('SELECT id, email, created FROM users').all();
 }
 
-function getById(id) {
+export function getById(id) {
   return db.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
 }
 
-function updateEmailById(id, newEmail) {
+export function updateEmailById(id, newEmail) {
   const stmt = db.prepare('UPDATE users SET email = ? WHERE id = ?');
 
   try {
@@ -38,7 +38,7 @@ function updateEmailById(id, newEmail) {
   }
 }
 
-function deleteById(id) {
+export function deleteById(id) {
   const stmt = db.prepare('DELETE FROM users WHERE id = ?');
 
   try {
@@ -54,5 +54,3 @@ function deleteById(id) {
     throw new Error('User deletion failed.', { cause: e.message });
   }
 }
-
-export default { getAll, getById, deleteById, updateEmailById };

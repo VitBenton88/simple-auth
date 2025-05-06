@@ -12,7 +12,7 @@ db.prepare(`
   )
 `).run();
 
-function create(email, success, message) {
+export function create(email, success, message) {
   const stmt = db.prepare('INSERT INTO logs (email, success, message) VALUES (?, ?, ?)');
 
   try {
@@ -22,7 +22,7 @@ function create(email, success, message) {
   }
 }
 
-function getAll() {
+export function getAll() {
   try {
     return db.prepare('SELECT * FROM logs ORDER BY timestamp DESC').all();
   } catch (e) {
@@ -31,8 +31,6 @@ function getAll() {
   }
 }
 
-function getById(id) {
+export function getById(id) {
   return db.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
 }
-
-export default { create, getAll, getById };

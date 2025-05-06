@@ -1,12 +1,9 @@
 import express from 'express';
-import logging from '../services/logging.js';
-import jwtService from '../services/jwt.js';
-import usersService from '../services/users.js';
+import {create as createLog} from '../services/logging.js';
+import { requireAuth } from '../services/jwt.js';
+import { deleteById, getAll, getById, updateEmailById } from '../services/users.js';
 
 const router = express.Router();
-
-const { deleteById, getAll, getById, updateEmailById } = usersService;
-const { requireAuth } = jwtService;
 
 router.get('{/:id}', requireAuth, (req, res) => {
   try {
@@ -37,10 +34,10 @@ router.put('/update/:id', requireAuth, (req, res) => {
 
   try {
     const updatedUser = updateEmailById(id, email);
-    logging.create(req.user.id, 1, `Updated email for user ID: ${id}`);
+    createLog(req.user.id, 1, `Updated email for user ID: ${id}`);
     res.status(200).json({ message: `User email updated successfully.`, user: updatedUser });
   } catch (err) {
-    logging.create(req.user.id, 0, `Failed to update email for user ID: ${id}`);
+    createLog(req.user.id, 0, `Failed to update email for user ID: ${id}`);
     res.status(404).json({ error: err.message || 'User not found or update failed.' });
   }
 });
@@ -54,10 +51,10 @@ router.delete('/delete/:id', requireAuth, (req, res) => {
 
   try {
     deleteById(id);
-    logging.create(req.user.id, 1, `Deleted user ID: ${id}`);
+    createLog(req.user.id, 1, `Deleted user ID: ${id}`);
     res.status(200).json({ message: `User with ID "${id}" deleted successfully.` });
   } catch (err) {
-    logging.create(req.user.id, 0, `Failed to delete user ID: ${id}`);
+    createLog(req.user.id, 0, `Failed to delete user ID: ${id}`);
     res.status(404).json({ error: err.message || 'User not found or deletion failed.' });
   }
 });

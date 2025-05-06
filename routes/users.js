@@ -14,6 +14,7 @@ router.get('{/:id}', requireAuth, (req, res) => {
       if (!user) {
         return res.status(404).json({ error: 'User not found.' });
       }
+
       return res.json(user);
     } else {
       // Get all users when no ID is provided
@@ -27,6 +28,7 @@ router.get('{/:id}', requireAuth, (req, res) => {
 
 router.post('/create', (req, res) => {
   const { email, password } = req.body;
+
   if (!email || !password) {
     return res.status(400).json({ error: 'Email and password are required.' });
   }
@@ -42,7 +44,7 @@ router.post('/create', (req, res) => {
   } catch (err) {
     createLog(email, 0, `Registration failed: ${err.message}`);
     res.status(409).json({ error: 'User already exists or registration failed.' });
-  } finally {}
+  }
 });
 
 router.put('/update/:id', requireAuth, (req, res) => {
@@ -59,10 +61,10 @@ router.put('/update/:id', requireAuth, (req, res) => {
 
   try {
     const updatedUser = updateEmailById(id, email);
-    createLog(req.user.id, 1, `Updated email for user ID: ${id}`);
-    res.status(200).json({ message: `User email updated successfully.`, user: updatedUser });
+    createLog(req.user.id, 1, `Updated for user ID: ${id}`);
+    res.status(200).json({ message: `User updated successfully.`, user: updatedUser });
   } catch (err) {
-    createLog(req.user.id, 0, `Failed to update email for user ID: ${id}`);
+    createLog(req.user.id, 0, `Failed to update for user ID: ${id}`);
     res.status(404).json({ error: err.message || 'User not found or update failed.' });
   }
 });

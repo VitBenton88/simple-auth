@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import { hashPassword } from '../util/helpers.js';
 
 const db = new Database('users.db');
 
@@ -18,6 +19,20 @@ export function getAll() {
 
 export function getById(id) {
   return db.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
+}
+
+export function register(email, password) {
+  const { salt, hash } = hashPassword(password);
+  const stmt = db.prepare('INSERT INTO users (email, hash, salt) VALUES (?, ?, ?)');
+
+  try {
+    stmt.run(email, hash, salt);
+
+    console.log(`User "${email}" registered.`);
+  } catch (e) {
+    console.error('Registration failed:', e.message);
+    throw new Error('Registration failed.', { cause: e.message });
+  }
 }
 
 export function updateEmailById(id, newEmail) {

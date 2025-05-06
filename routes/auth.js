@@ -1,5 +1,5 @@
 import express from 'express';
-import { login, register } from '../services/auth.js';
+import { login } from '../services/auth.js';
 import { create as createLog } from '../services/logging.js';
 import { requireAuth } from '../services/jwt.js';
 
@@ -24,22 +24,6 @@ router.post('/login', (req, res) => {
   });
 
   res.json({ message: result.message });
-});
-
-router.post('/register', (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
-  }
-
-  try {
-    register(email, password);
-    createLog(email, 1, 'Registration successful');
-    res.status(201).json({ message: `User "${email}" registered successfully.` });
-  } catch (err) {
-    createLog(email, 0, `Registration failed: ${err.message}`);
-    res.status(409).json({ error: 'User already exists or registration failed.' });
-  } finally {}
 });
 
 router.post('/logout', (req, res) => {

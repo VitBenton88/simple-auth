@@ -1,7 +1,7 @@
 import express from 'express';
 import {create as createLog} from '../services/logging.js';
 import { requireAuth } from '../services/jwt.js';
-import { deleteById, getAll, getById, updateEmailById } from '../services/users.js';
+import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
 
 const router = express.Router();
 
@@ -22,6 +22,22 @@ router.get('{/:id}', requireAuth, (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: 'Failed to fetch user(s).' });
   }
+});
+
+router.post('/create', (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  try {
+    register(email, password);
+    createLog(email, 1, 'Registration successful');
+    res.status(201).json({ message: `User "${email}" registered successfully.` });
+  } catch (err) {
+    createLog(email, 0, `Registration failed: ${err.message}`);
+    res.status(409).json({ error: 'User already exists or registration failed.' });
+  } finally {}
 });
 
 router.put('/update/:id', requireAuth, (req, res) => {

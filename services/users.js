@@ -13,12 +13,28 @@ db.prepare(`
   )
 `).run();
 
-// Get all users
 function getAll() {
   return db.prepare('SELECT id, email, created FROM users').all();
 }
 
-// Delete a user
+function updateEmailById(id, newEmail) {
+  const stmt = db.prepare('UPDATE users SET email = ? WHERE id = ?');
+
+  try {
+    const info = stmt.run(newEmail, id);
+
+    if (info.changes === 0) {
+      throw new Error(`No user found with id "${id}".`);
+    }
+
+    const updatedUser = db.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
+    return updatedUser;
+  } catch (e) {
+    console.error('Email update failed:', e.message);
+    throw new Error('Email update failed.', { cause: e.message });
+  }
+}
+
 function deleteById(id) {
   const stmt = db.prepare('DELETE FROM users WHERE id = ?');
 
@@ -36,4 +52,4 @@ function deleteById(id) {
   }
 }
 
-export default { deleteById, getAll };
+export default { deleteById, getAll, updateEmailById };

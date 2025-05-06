@@ -8,7 +8,6 @@ const router = express.Router();
 const { login, register } = authService;
 const { requireAuth } = jwtService;
 
-// POST /login
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
   const result = login(email, password);
@@ -30,7 +29,6 @@ router.post('/login', (req, res) => {
   res.json({ message: result.message });
 });
 
-// POST /register
 router.post('/register', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -47,7 +45,6 @@ router.post('/register', (req, res) => {
   } finally {}
 });
 
-// POST /logout
 router.post('/logout', (req, res) => {
   logging.create(req.user?.email || 'Unknown', 1, 'User logged out');
 
@@ -59,7 +56,6 @@ router.post('/logout', (req, res) => {
   res.json({ message: 'Logged out successfully.' });
 });
 
-// GET /me
 router.get('/me', requireAuth, (req, res) => {
   const { id } = req.user;
 

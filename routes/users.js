@@ -22,6 +22,7 @@ router.get('{/:id}', requireAuth, (req, res) => {
       return res.json(users);
     }
   } catch (err) {
+    createLog('Unknown', 0, `Failed to fetch user(s): ${err.message}`);
     return res.status(500).json({ error: 'Failed to fetch user(s).' });
   }
 });

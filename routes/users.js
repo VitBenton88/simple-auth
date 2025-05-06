@@ -2,7 +2,7 @@ import express from 'express';
 import {create as createLog} from '../services/logging.js';
 import { requireAuth } from '../services/jwt.js';
 import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
-import { isValidEmail } from '../util/validation'
+import { isValidEmail } from '../util/validation.js'
 
 const router = express.Router();
 

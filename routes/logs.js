@@ -12,6 +12,7 @@ router.get('{/:id}', requireAuth, (req, res) => {
       if (!log) {
         return res.status(404).json({ error: 'Log not found.' });
       }
+
       return res.json(log);
     } else {
       // Get all logs when no ID is provided

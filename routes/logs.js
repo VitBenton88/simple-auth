@@ -6,7 +6,7 @@ const router = express.Router();
 
 const { requireAuth } = jwtService;
 
-router.get('/:id?', requireAuth, (req, res) => {
+router.get('/:id', requireAuth, (req, res) => {
   try {
     if (req.params.id) {
       const log = logging.getById(req.params.id);

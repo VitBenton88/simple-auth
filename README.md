@@ -16,8 +16,8 @@ A minimal Express-based authentication server. For a minimal frontend UI that is
 - npm or yarn
 
 ### Recommendations
-- [Update this.](https://github.com/VitBenton88/simple-auth/blob/d01b00ba8f3907704a466a2da818b8a6f9aa17ed/services/jwt.js#L6)
-- Use middleware for protecting routes as needed. [See here.](https://github.com/VitBenton88/simple-auth/blob/1ba252e1d545107a9d33a5c6329f65a745f374ba/services/jwt.js#L19)
+- [Update this.](https://github.com/VitBenton88/simple-auth/blob/d25825c20e71550e5ec110b8c3ca6e03bc098388/services/jwt.js#L5)
+- Use middleware for protecting routes as needed. [See here.](https://github.com/VitBenton88/simple-auth/blob/d25825c20e71550e5ec110b8c3ca6e03bc098388/routes/middleware.js#L4)
 
 ### Installation
 

@@ -40,7 +40,7 @@ function login(email, password) {
   
     return {
       message: `Login successful for "${email}".`,
-      token: jwtServices.createToken(email)
+      token: jwtServices.createToken(user.id)
     };
   }
 

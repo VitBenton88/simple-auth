@@ -7,6 +7,11 @@ const router = express.Router();
 
 router.post('/login', (req, res) => {
   const { email, password } = req.body;
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format.' });
+  }
+
   const result = login(email, password);
 
   if (!result || typeof result === 'string') {

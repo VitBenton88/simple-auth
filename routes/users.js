@@ -2,6 +2,7 @@ import express from 'express';
 import {create as createLog} from '../services/logging.js';
 import { requireAuth } from '../services/jwt.js';
 import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
+import { isValidEmail } from '../util/validation'
 
 const router = express.Router();
 
@@ -27,7 +28,11 @@ router.get('{/:id}', requireAuth, (req, res) => {
 router.post('/create', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
+    return res.status(400).json({ error: 'Email and password are required.' });
+  }
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format.' });
   }
 
   try {
@@ -46,6 +51,10 @@ router.put('/update/:id', requireAuth, (req, res) => {
 
   if (!id || !email) {
     return res.status(400).json({ error: 'User ID and new email are required.' });
+  }
+
+  if (!isValidEmail(email)) {
+    return res.status(400).json({ error: 'Invalid email format.' });
   }
 
   try {

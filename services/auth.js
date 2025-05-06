@@ -1,5 +1,4 @@
 import Database from 'better-sqlite3';
-import { createToken } from '../services/jwt.js';
 import { hashPassword } from '../util/helpers.js';
 
 const db = new Database('users.db');
@@ -18,16 +17,12 @@ export function login(email, password) {
   const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
   const user = stmt.get(email);
 
-
   if (user?.id) {
     const { hash } = hashPassword(password, user.salt);
 
     if (hash !== user.hash) return 'Invalid password.';
   
-    return {
-      message: `Login successful for "${email}".`,
-      token: createToken(user.id)
-    };
+    return user;
   }
 
   return false

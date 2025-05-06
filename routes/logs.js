@@ -6,13 +6,22 @@ const router = express.Router();
 
 const { requireAuth } = jwtService;
 
-// GET /users
-router.get('/getAll', requireAuth, (req, res) => {
+router.get('/:id?', requireAuth, (req, res) => {
   try {
-    const logs = logging.getAll();
-    res.json(logs);
+    if (req.params.id) {
+      const log = logging.getById(req.params.id);
+
+      if (!log) {
+        return res.status(404).json({ error: 'Log not found.' });
+      }
+      return res.json(log);
+    } else {
+      // Get all logs when no ID is provided
+      const logs = logging.getAll();
+      return res.json(logs);
+    }
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch logs.' });
+    return res.status(500).json({ error: 'Failed to fetch log(s).' });
   }
 });
 

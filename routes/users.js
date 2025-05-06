@@ -5,15 +5,25 @@ import usersService from '../services/users.js';
 
 const router = express.Router();
 
-const { getAll, deleteById, updateEmailById } = usersService;
+const { deleteById, getAll, getById, updateEmailById } = usersService;
 const { requireAuth } = jwtService;
 
-router.get('/getAll', requireAuth, (_, res) => {
+router.get('/:id?', requireAuth, (req, res) => {
   try {
-    const users = getAll();
-    res.json(users);
+    if (req.params.id) {
+      const user = getById(req.params.id);
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found.' });
+      }
+      return res.json(user);
+    } else {
+      // Get all users when no ID is provided
+      const users = getAll();
+      return res.json(users);
+    }
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch users.' });
+    return res.status(500).json({ error: 'Failed to fetch user(s).' });
   }
 });
 

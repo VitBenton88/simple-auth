@@ -31,4 +31,8 @@ function getAll() {
   }
 }
 
-export default { create, getAll };
+function getById(id) {
+  return db.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
+}
+
+export default { create, getAll, getById };

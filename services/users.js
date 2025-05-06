@@ -2,7 +2,6 @@ import Database from 'better-sqlite3';
 
 const db = new Database('users.db');
 
-// Create users table
 db.prepare(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -15,6 +14,10 @@ db.prepare(`
 
 function getAll() {
   return db.prepare('SELECT id, email, created FROM users').all();
+}
+
+function getById(id) {
+  return db.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
 }
 
 function updateEmailById(id, newEmail) {
@@ -52,4 +55,4 @@ function deleteById(id) {
   }
 }
 
-export default { deleteById, getAll, updateEmailById };
+export default { getAll, getById, deleteById, updateEmailById };

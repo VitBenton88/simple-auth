@@ -9,6 +9,7 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(cookieParser());
+
 app.use('/auth', authRoutes);
 app.use('/logs', logRoutes);
 app.use('/users', usersRoutes);

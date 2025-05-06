@@ -14,7 +14,7 @@ export function sign(header, payload) {
     .digest('base64url');
 
   return `${data}.${signature}`;
-};
+}
 
 export function requireAuth(req, res, next) {
   const token = req.cookies.token;
@@ -47,7 +47,7 @@ export function verify(token) {
   const now = Math.floor(Date.now() / 1000);
 
   return (payload.exp && payload.exp < now) ? null : payload;
-};
+}
 
 export function createToken(id, expiresInSec = 3600) {
   const now = Math.floor(Date.now() / 1000);
@@ -58,4 +58,4 @@ export function createToken(id, expiresInSec = 3600) {
   };
 
   return sign({ alg: 'HS256', typ: 'JWT' }, payload);
-};
+}

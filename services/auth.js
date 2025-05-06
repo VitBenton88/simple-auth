@@ -4,7 +4,6 @@ import helpers from '../util/helpers.js';
 
 const db = new Database('users.db');
 
-// Create users table
 db.prepare(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -15,7 +14,6 @@ db.prepare(`
   )
 `).run();
 
-// Register a user
 function register(email, password) {
   const { salt, hash } = helpers.hashPassword(password);
   const stmt = db.prepare('INSERT INTO users (email, hash, salt) VALUES (?, ?, ?)');

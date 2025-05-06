@@ -2,7 +2,6 @@ import Database from 'better-sqlite3';
 
 const db = new Database('logs.db');
 
-// Create logs table
 db.prepare(`
   CREATE TABLE IF NOT EXISTS logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { hashPassword } from '../util/helpers.js';
+import { hashPassword } from './/helpers.js';
 
 const db = new Database('users.db');
 

@@ -1,5 +1,5 @@
 import { createHmac } from 'crypto';
-import { base64url } from '../util/helpers.js';
+import { base64url } from './helpers.js';
 import { create } from './logging.js';
 
 // Shared secret for signing

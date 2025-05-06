@@ -59,7 +59,7 @@ router.post('/logout', (req, res) => {
 router.get('/me', requireAuth, (req, res) => {
   const { id } = req.user;
 
-  res.json({ email: id });
+  res.json({ id });
 });
 
 export default router;

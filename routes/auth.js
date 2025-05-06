@@ -2,12 +2,12 @@ import express from 'express';
 import { login } from '../services/auth.js';
 import { create as createLog } from '../services/logging.js';
 import { createTokenPair } from '../services/jwt.js';
-import { rateLimit, requireAuth } from './middleware.js';
+import { requireAuth } from './middleware.js';
 import { isValidEmail } from '../util/validation.js'
 
 const router = express.Router();
 
-router.post('/login', rateLimit, (req, res) => {
+router.post('/login', (req, res) => {
   const { email, password } = req.body;
 
   if (!isValidEmail(email)) {
@@ -36,7 +36,7 @@ router.post('/login', rateLimit, (req, res) => {
   createLog(email, 1, 'Login successful');
 });
 
-router.post('/logout', rateLimit, (_, res) => {
+router.post('/logout', (_, res) => {
   createLog('Unknown', 1, 'User logged out');
 
   res.clearCookie('refreshToken', {
@@ -48,7 +48,7 @@ router.post('/logout', rateLimit, (_, res) => {
   res.json({ message: 'Logged out successfully.' });
 });
 
-router.post('/refresh', rateLimit, (req, res) => {
+router.post('/refresh', (req, res) => {
   const token = req.cookies.refreshToken;
   const payload = verify(token);
 

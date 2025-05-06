@@ -1,11 +1,9 @@
 import { createHmac } from 'crypto';
-import helpers from '../util/helpers.js';
+import { base64url } from '../util/helpers.js';
 import { create } from './logging.js';
 
 // Shared secret for signing
 const SECRET = 'super-secret-key'; // In production, store securely
-
-const { base64url } = helpers;
 
 export function sign(header, payload) {
   const headerEncoded = base64url(JSON.stringify(header));

@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 import { createToken } from '../services/jwt.js';
-import helpers from '../util/helpers.js';
+import { hashPassword } from '../util/helpers.js';
 
 const db = new Database('users.db');
 
@@ -15,7 +15,7 @@ db.prepare(`
 `).run();
 
 export function register(email, password) {
-  const { salt, hash } = helpers.hashPassword(password);
+  const { salt, hash } = hashPassword(password);
   const stmt = db.prepare('INSERT INTO users (email, hash, salt) VALUES (?, ?, ?)');
 
   try {
@@ -34,7 +34,7 @@ export function login(email, password) {
 
 
   if (user?.id) {
-    const { hash } = helpers.hashPassword(password, user.salt);
+    const { hash } = hashPassword(password, user.salt);
 
     if (hash !== user.hash) return 'Invalid password.';
   

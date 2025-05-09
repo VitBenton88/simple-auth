@@ -1,20 +1,10 @@
-import Database from 'better-sqlite3';
+import dbs from '../db.js';
 import { hashPassword } from './/helpers.js';
 
-const db = new Database('users.db');
-
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    hash TEXT NOT NULL,
-    salt TEXT NOT NULL,
-    created TEXT NOT NULL DEFAULT (datetime('now'))
-  )
-`).run();
+const { usersDb } = dbs;
 
 export function login(email, password) {
-  const stmt = db.prepare('SELECT * FROM users WHERE email = ?');
+  const stmt = usersDb.prepare('SELECT * FROM users WHERE email = ?');
   const user = stmt.get(email);
 
   if (user?.id) {

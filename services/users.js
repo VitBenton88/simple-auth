@@ -1,29 +1,19 @@
-import Database from 'better-sqlite3';
+import dbs from '../db.js';
 import { hashPassword } from './helpers.js';
 
-const db = new Database('users.db');
-
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    hash TEXT NOT NULL,
-    salt TEXT NOT NULL,
-    created TEXT NOT NULL DEFAULT (datetime('now'))
-  )
-`).run();
+const { usersDb } = dbs;
 
 export function getAll() {
-  return db.prepare('SELECT id, email, created FROM users').all();
+  return usersDb.prepare('SELECT id, email, created FROM users').all();
 }
 
 export function getById(id) {
-  return db.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
+  return usersDb.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
 }
 
 export function register(email, password) {
   const { salt, hash } = hashPassword(password);
-  const stmt = db.prepare('INSERT INTO users (email, hash, salt) VALUES (?, ?, ?)');
+  const stmt = usersDb.prepare('INSERT INTO users (email, hash, salt) VALUES (?, ?, ?)');
 
   try {
     stmt.run(email, hash, salt);
@@ -36,7 +26,7 @@ export function register(email, password) {
 }
 
 export function updateEmailById(id, newEmail) {
-  const stmt = db.prepare('UPDATE users SET email = ? WHERE id = ?');
+  const stmt = usersDb.prepare('UPDATE users SET email = ? WHERE id = ?');
 
   try {
     const info = stmt.run(newEmail, id);
@@ -45,7 +35,7 @@ export function updateEmailById(id, newEmail) {
       throw new Error(`No user found with id "${id}".`);
     }
 
-    const updatedUser = db.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
+    const updatedUser = usersDb.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
     return updatedUser;
   } catch (e) {
     console.error('Email update failed:', e.message);
@@ -54,7 +44,7 @@ export function updateEmailById(id, newEmail) {
 }
 
 export function deleteById(id) {
-  const stmt = db.prepare('DELETE FROM users WHERE id = ?');
+  const stmt = usersDb.prepare('DELETE FROM users WHERE id = ?');
 
   try {
     const info = stmt.run(id);

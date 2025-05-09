@@ -17,7 +17,6 @@ router.get('{/:id}', requireAuth, (req, res) => {
 
       return res.json(user);
     } else {
-      // Get all users when no ID is provided
       const users = getAll();
       return res.json(users);
     }

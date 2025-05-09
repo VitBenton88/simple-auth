@@ -23,7 +23,6 @@ router.post('/login', (req, res) => {
 
   const { refreshToken } = createTokenPair(user.id);
 
-  // Set refresh token as an HTTP-only cookie
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
     secure: false, // Set to true in production with HTTPS

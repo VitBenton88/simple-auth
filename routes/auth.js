@@ -1,4 +1,5 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { login } from '../services/auth.js';
 import { create as createLog } from '../services/logging.js';
 import { createToken, createTokenPair, verify } from '../services/jwt.js';
@@ -7,7 +8,15 @@ import { isValidEmail } from '../validation.js'
 
 const router = express.Router();
 
-router.post('/login', (req, res) => {
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 10,
+  message: { error: 'Too many login attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+router.post('/login', loginLimiter, (req, res) => {
   const { email, password } = req.body;
 
   if (!isValidEmail(email)) {

@@ -1,5 +1,5 @@
 import dbs from '../db.js';
-import { hashPassword } from './/helpers.js';
+import { hashPassword } from './helpers.js';
 
 const { usersDb } = dbs;
 
@@ -10,7 +10,7 @@ export function login(email, password) {
   if (user?.id) {
     const { hash } = hashPassword(password, user.salt);
 
-    if (hash !== user.hash) return 'Invalid password.';
+    if (hash !== user.hash) return null;
   
     return user;
   }

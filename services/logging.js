@@ -22,5 +22,5 @@ export function getAll() {
 }
 
 export function getById(id) {
-  return logsDb.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
+  return logsDb.prepare('SELECT * FROM logs WHERE id = ?').get(id);
 }

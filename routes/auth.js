@@ -1,7 +1,7 @@
 import express from 'express';
 import { login } from '../services/auth.js';
 import { create as createLog } from '../services/logging.js';
-import { createTokenPair, verify } from '../services/jwt.js';
+import { createToken, createTokenPair, verify } from '../services/jwt.js';
 import { requireAuth } from './middleware.js';
 import { isValidEmail } from '../validation.js'
 
@@ -17,11 +17,11 @@ router.post('/login', (req, res) => {
   const user = login(email, password);
 
   if (!user) {
-    createLog(email, 0, result || 'Invalid credentials');
-    return res.status(401).json({ error: result || 'Invalid credentials' });
+    createLog(email, 0, 'Invalid credentials');
+    return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  const { refreshToken } = createTokenPair(user.id);
+  const { accessToken, refreshToken } = createTokenPair(user.id);
 
   res.cookie('refreshToken', refreshToken, {
     httpOnly: true,
@@ -29,10 +29,9 @@ router.post('/login', (req, res) => {
     sameSite: 'strict',
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   });
-  
-  res.json({ user });
 
   createLog(email, 1, 'Login successful');
+  res.json({ accessToken });
 });
 
 router.post('/logout', (_, res) => {

@@ -51,6 +51,10 @@ router.put('/update/:id', requireAuth, (req, res) => {
   const { id } = req.params;
   const { email } = req.body;
 
+  if (req.user.id !== parseInt(id)) {
+    return res.status(403).json({ error: 'Forbidden: cannot modify another user.' });
+  }
+
   if (!id || !email) {
     return res.status(400).json({ error: 'User ID and new email are required.' });
   }
@@ -71,6 +75,10 @@ router.put('/update/:id', requireAuth, (req, res) => {
 
 router.delete('/delete/:id', requireAuth, (req, res) => {
   const { id } = req.params;
+
+  if (req.user.id !== parseInt(id)) {
+    return res.status(403).json({ error: 'Forbidden: cannot delete another user.' });
+  }
 
   if (!id) {
     return res.status(400).json({ error: 'User ID is required.' });

@@ -2,6 +2,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import helmet from 'helmet';
+import { closeDb } from './db.js';
 import authRoutes from './routes/auth.js';
 import logRoutes from './routes/logs.js';
 import usersRoutes from './routes/users.js';
@@ -46,9 +47,26 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: message });
 });
 
+export function shutdown(server) {
+  return new Promise((resolve) => {
+    server.close(() => {
+      closeDb();
+      resolve();
+    });
+  });
+}
+
 if (import.meta.url === `file://${process.argv[1]}`) {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`Login service running at http://localhost:${PORT}`);
   });
+
+  const handleShutdownSignal = (signal) => {
+    console.log(`Received ${signal}, shutting down gracefully...`);
+    shutdown(server).then(() => process.exit(0));
+  };
+
+  process.on('SIGTERM', () => handleShutdownSignal('SIGTERM'));
+  process.on('SIGINT', () => handleShutdownSignal('SIGINT'));
 }

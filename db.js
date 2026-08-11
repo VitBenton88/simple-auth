@@ -35,4 +35,9 @@ if (!userColumns.includes('token_version')) {
   usersDb.prepare('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0').run();
 }
 
+export function closeDb() {
+  usersDb.close();
+  logsDb.close();
+}
+
 export default { logsDb, usersDb };

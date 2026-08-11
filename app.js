@@ -13,7 +13,7 @@ if (process.env.CORS_ORIGIN) {
   console.warn('CORS_ORIGIN is not set; cross-origin browser requests will be blocked.');
 }
 
-app.use(express.json());
+app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 
 app.use('/auth', authRoutes);

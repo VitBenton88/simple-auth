@@ -40,6 +40,23 @@ test('unknown routes return a JSON 404 instead of the Express default HTML page'
   }
 });
 
+test('request bodies over the size limit are rejected with 413', async () => {
+  const { server, base } = await startServer();
+
+  try {
+    const oversizedPassword = 'a'.repeat(20 * 1024); // 20kb, over a 10kb body limit
+    const res = await fetch(`${base}/users/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'oversized@example.com', password: oversizedPassword }),
+    });
+
+    assert.equal(res.status, 413);
+  } finally {
+    server.close();
+  }
+});
+
 test('CORS_ORIGIN, when set, is echoed back with credentials allowed', async () => {
   const { server, base } = await startServer();
 

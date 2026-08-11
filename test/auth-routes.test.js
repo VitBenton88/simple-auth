@@ -19,6 +19,25 @@ function extractCookie(res, name) {
   return match?.[1];
 }
 
+test('login rejects a non-string password with 400 instead of throwing', async () => {
+  const { server, base } = await startServer();
+
+  try {
+    const email = uniqueEmail('non-string-password');
+    await register(email, 'a-strong-password');
+
+    const res = await fetch(`${base}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: { not: 'a string' } }),
+    });
+
+    assert.equal(res.status, 400);
+  } finally {
+    server.close();
+  }
+});
+
 test('an access token cannot be used as a refresh token', async () => {
   const { server, base } = await startServer();
 

@@ -4,6 +4,13 @@ import { ConflictError, NotFoundError } from './errors.js';
 
 const { usersDb } = dbs;
 
+// register()/updateEmailById() assume email/password have already been
+// shape-validated (see validation.js) — that happens once, in routes/*.js,
+// rather than being re-checked here. Calling these directly (e.g. importing
+// this service into another project without going through the HTTP routes)
+// with malformed input will throw rather than return a clean validation
+// error.
+
 export function getAll(limit = 50, offset = 0) {
   return usersDb.prepare('SELECT id, email, created FROM users ORDER BY id LIMIT ? OFFSET ?').all(limit, offset);
 }
@@ -86,5 +93,9 @@ export function getTokenVersion(id) {
 }
 
 export function bumpTokenVersion(id) {
-  usersDb.prepare('UPDATE users SET token_version = token_version + 1 WHERE id = ?').run(id);
+  const row = usersDb
+    .prepare('UPDATE users SET token_version = token_version + 1 WHERE id = ? RETURNING token_version')
+    .get(id);
+
+  return row ? row.token_version : null;
 }

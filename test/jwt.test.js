@@ -42,6 +42,16 @@ test('verify rejects a token with a tampered signature', () => {
   assert.equal(verify(tampered), null);
 });
 
+test('verify rejects a validly-signed token whose payload has a non-numeric exp', () => {
+  const headerEncoded = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payloadEncoded = base64url(JSON.stringify({ sub: 1, type: 'access' })); // no exp at all
+  const data = `${headerEncoded}.${payloadEncoded}`;
+  const signature = createHmac('sha256', process.env.JWT_SECRET).update(data).digest('base64url');
+  const token = `${data}.${signature}`;
+
+  assert.equal(verify(token), null);
+});
+
 test('verify rejects a validly-signed token whose payload is not valid JSON, without throwing', () => {
   const headerEncoded = base64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
   const payloadEncoded = Buffer.from('not-json').toString('base64url');

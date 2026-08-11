@@ -54,7 +54,11 @@ export function getUserHandler(req, res) {
 }
 
 export async function registerHandler(req, res) {
-  const { email, password } = req.body;
+  const { password } = req.body;
+  // Normalized once here so it matches the casing services/users.js stores
+  // and looks up — otherwise audit-log entries and the DB record for the
+  // same registration could show different casing for the same email.
+  const email = typeof req.body.email === 'string' ? req.body.email.toLowerCase() : req.body.email;
 
   if (!isValidEmail(email)) {
     return res.status(400).json({ error: 'Invalid email format.' });
@@ -87,7 +91,7 @@ export function updateUserHandler(req, res) {
     return res.status(400).json({ error: 'Invalid user id.' });
   }
 
-  if (!isOwner(req, id)) {
+  if (!isOwner(req, id) && !req.user.isAdmin) {
     return res.status(403).json({ error: 'Forbidden: cannot modify another user.' });
   }
 
@@ -125,7 +129,7 @@ export function deleteUserHandler(req, res) {
     return res.status(400).json({ error: 'Invalid user id.' });
   }
 
-  if (!isOwner(req, id)) {
+  if (!isOwner(req, id) && !req.user.isAdmin) {
     return res.status(403).json({ error: 'Forbidden: cannot delete another user.' });
   }
 

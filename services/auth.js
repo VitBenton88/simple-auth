@@ -4,6 +4,13 @@ import { timingSafeEqual } from 'node:crypto';
 
 const { usersDb } = dbs;
 
+// login()/register() (services/users.js) assume email/password have already
+// been shape-validated (see validation.js) and normalized by the caller —
+// that happens once, in routes/*.js, rather than being re-checked here.
+// Calling these directly (e.g. importing this service into another project
+// without going through the HTTP routes) with malformed input will throw
+// rather than return a clean validation error.
+
 // Used to keep the "user not found" path taking roughly as long as the
 // "wrong password" path, so response timing can't be used to enumerate
 // registered emails.

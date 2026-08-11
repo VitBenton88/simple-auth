@@ -37,7 +37,11 @@ function refreshCookieOptions() {
 }
 
 export async function loginHandler(req, res) {
-  const { email, password } = req.body;
+  const { password } = req.body;
+  // Normalized once here so it matches the casing services/auth.js stores
+  // and looks up — otherwise audit-log entries and the DB record for the
+  // same login attempt could show different casing for the same email.
+  const email = typeof req.body.email === 'string' ? req.body.email.toLowerCase() : req.body.email;
 
   if (!isValidEmail(email)) {
     return res.status(400).json({ error: 'Invalid email format.' });
@@ -99,8 +103,7 @@ export function refreshHandler(req, res) {
   // per-session, this also retires any other refresh token issued to
   // this user (e.g. another device) — a deliberate lean tradeoff over
   // tracking sessions individually.
-  bumpTokenVersion(payload.sub);
-  const newVersion = getTokenVersion(payload.sub);
+  const newVersion = bumpTokenVersion(payload.sub);
   const { accessToken, refreshToken } = createTokenPair(payload.sub, newVersion);
 
   res.cookie('refreshToken', refreshToken, {

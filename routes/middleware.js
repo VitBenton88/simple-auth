@@ -1,5 +1,6 @@
 import { create } from '../services/logging.js';
 import { verify } from '../services/jwt.js';
+import { getById } from '../services/users.js';
 
 export function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -12,11 +13,18 @@ export function requireAuth(req, res, next) {
   const token = authHeader.slice(7);
   const payload = verify(token);
 
-  if (!payload) {
+  if (!payload || payload.type !== 'access') {
     create('Unknown', 0, `Invalid or expired access token from IP ${req.ip}`);
     return res.status(401).json({ error: 'Unauthorized: Invalid or expired access token' });
   }
 
-  req.user = { id: payload.sub };
+  const user = getById(payload.sub);
+
+  if (!user) {
+    create('Unknown', 0, `Access token for deleted user from IP ${req.ip}`);
+    return res.status(401).json({ error: 'Unauthorized: User no longer exists' });
+  }
+
+  req.user = { id: user.id, email: user.email };
   next();
 }

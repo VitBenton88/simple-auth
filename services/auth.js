@@ -1,6 +1,6 @@
 import dbs from '../db.js';
 import { hashPassword } from './helpers.js';
-import { timingSafeEqual } from 'crypto';
+import { timingSafeEqual } from 'node:crypto';
 
 const { usersDb } = dbs;
 
@@ -18,16 +18,16 @@ function safeEqual(a, b) {
   return timingSafeEqual(bufA, bufB);
 }
 
-export function login(email, password) {
+export async function login(email, password) {
   const stmt = usersDb.prepare('SELECT * FROM users WHERE email = ?');
-  const user = stmt.get(email);
+  const user = stmt.get(email.toLowerCase());
 
   if (!user?.id) {
-    hashPassword(password, DUMMY_SALT);
+    await hashPassword(password, DUMMY_SALT);
     return false;
   }
 
-  const { hash } = hashPassword(password, user.salt);
+  const { hash } = await hashPassword(password, user.salt);
 
   if (!safeEqual(hash, user.hash)) return null;
 

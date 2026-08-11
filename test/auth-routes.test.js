@@ -24,7 +24,7 @@ test('an access token cannot be used as a refresh token', async () => {
 
   try {
     const email = uniqueEmail('access-as-refresh');
-    register(email, 'a-strong-password');
+    await register(email, 'a-strong-password');
 
     const loginRes = await fetch(`${base}/auth/login`, {
       method: 'POST',
@@ -49,7 +49,7 @@ test('a refresh token cannot be used to call a protected route', async () => {
 
   try {
     const email = uniqueEmail('refresh-as-access');
-    register(email, 'a-strong-password');
+    await register(email, 'a-strong-password');
 
     const loginRes = await fetch(`${base}/auth/login`, {
       method: 'POST',
@@ -68,12 +68,54 @@ test('a refresh token cannot be used to call a protected route', async () => {
   }
 });
 
+test('refreshing rotates the refresh token, invalidating the one just used', async () => {
+  const { server, base } = await startServer();
+
+  try {
+    const email = uniqueEmail('rotation');
+    await register(email, 'a-strong-password');
+
+    const loginRes = await fetch(`${base}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'a-strong-password' }),
+    });
+    const originalRefreshToken = extractCookie(loginRes, 'refreshToken');
+
+    const firstRefreshRes = await fetch(`${base}/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `refreshToken=${originalRefreshToken}` },
+    });
+    assert.equal(firstRefreshRes.status, 200);
+
+    const rotatedRefreshToken = extractCookie(firstRefreshRes, 'refreshToken');
+    assert.ok(rotatedRefreshToken);
+    assert.notEqual(rotatedRefreshToken, originalRefreshToken);
+
+    // The token just spent should no longer work...
+    const reuseRes = await fetch(`${base}/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `refreshToken=${originalRefreshToken}` },
+    });
+    assert.equal(reuseRes.status, 401);
+
+    // ...while the newly-issued one should.
+    const secondRefreshRes = await fetch(`${base}/auth/refresh`, {
+      method: 'POST',
+      headers: { Cookie: `refreshToken=${rotatedRefreshToken}` },
+    });
+    assert.equal(secondRefreshRes.status, 200);
+  } finally {
+    server.close();
+  }
+});
+
 test('logging out revokes the refresh token so it can no longer be refreshed', async () => {
   const { server, base } = await startServer();
 
   try {
     const email = uniqueEmail('logout-revokes');
-    register(email, 'a-strong-password');
+    await register(email, 'a-strong-password');
 
     const loginRes = await fetch(`${base}/auth/login`, {
       method: 'POST',
@@ -103,7 +145,7 @@ test('a deleted user\'s access token is no longer accepted', async () => {
 
   try {
     const email = uniqueEmail('deleted-user');
-    register(email, 'a-strong-password');
+    await register(email, 'a-strong-password');
 
     const loginRes = await fetch(`${base}/auth/login`, {
       method: 'POST',
@@ -129,36 +171,12 @@ test('a deleted user\'s access token is no longer accepted', async () => {
   }
 });
 
-test('refresh cookie is not marked secure outside production', async () => {
+test('refresh cookie is marked secure by default', async () => {
   const { server, base } = await startServer();
-  const originalEnv = process.env.NODE_ENV;
-  process.env.NODE_ENV = 'development';
 
   try {
-    const email = uniqueEmail('cookie-dev');
-    register(email, 'a-strong-password');
-
-    const res = await fetch(`${base}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: 'a-strong-password' }),
-    });
-
-    assert.ok(!/secure/i.test(res.headers.get('set-cookie')));
-  } finally {
-    process.env.NODE_ENV = originalEnv;
-    server.close();
-  }
-});
-
-test('refresh cookie is marked secure in production', async () => {
-  const { server, base } = await startServer();
-  const originalEnv = process.env.NODE_ENV;
-  process.env.NODE_ENV = 'production';
-
-  try {
-    const email = uniqueEmail('cookie-prod');
-    register(email, 'a-strong-password');
+    const email = uniqueEmail('cookie-default');
+    await register(email, 'a-strong-password');
 
     const res = await fetch(`${base}/auth/login`, {
       method: 'POST',
@@ -168,7 +186,28 @@ test('refresh cookie is marked secure in production', async () => {
 
     assert.ok(/secure/i.test(res.headers.get('set-cookie')));
   } finally {
-    process.env.NODE_ENV = originalEnv;
+    server.close();
+  }
+});
+
+test('refresh cookie is not marked secure when COOKIE_SECURE=false', async () => {
+  const { server, base } = await startServer();
+  const originalCookieSecure = process.env.COOKIE_SECURE;
+  process.env.COOKIE_SECURE = 'false';
+
+  try {
+    const email = uniqueEmail('cookie-insecure');
+    await register(email, 'a-strong-password');
+
+    const res = await fetch(`${base}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'a-strong-password' }),
+    });
+
+    assert.ok(!/secure/i.test(res.headers.get('set-cookie')));
+  } finally {
+    process.env.COOKIE_SECURE = originalCookieSecure;
     server.close();
   }
 });

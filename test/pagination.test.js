@@ -17,7 +17,7 @@ async function startServer() {
 
 async function loginAsAdmin(base) {
   const email = uniqueEmail('page-admin');
-  register(email, 'a-strong-password');
+  await register(email, 'a-strong-password');
 
   const originalAdmins = process.env.ADMIN_EMAILS;
   process.env.ADMIN_EMAILS = email;
@@ -48,9 +48,9 @@ test('parsePagination passes through valid limit and offset', () => {
   assert.deepEqual(parsePagination({ limit: '10', offset: '20' }), { limit: 10, offset: 20 });
 });
 
-test('services/users getAll respects limit and offset', () => {
+test('services/users getAll respects limit and offset', async () => {
   for (let i = 0; i < 5; i++) {
-    register(uniqueEmail(`page-user-${i}`), 'a-strong-password');
+    await register(uniqueEmail(`page-user-${i}`), 'a-strong-password');
   }
 
   const firstPage = getAllUsers(2, 0);
@@ -80,7 +80,7 @@ test('GET /users respects a ?limit= query param', async () => {
 
   try {
     for (let i = 0; i < 5; i++) {
-      register(uniqueEmail(`route-page-user-${i}`), 'a-strong-password');
+      await register(uniqueEmail(`route-page-user-${i}`), 'a-strong-password');
     }
 
     const res = await fetch(`${base}/users?limit=2`, { headers: { Authorization: `Bearer ${accessToken}` } });

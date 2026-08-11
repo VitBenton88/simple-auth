@@ -5,23 +5,26 @@ import { ConflictError, NotFoundError } from './errors.js';
 const { usersDb } = dbs;
 
 export function getAll(limit = 50, offset = 0) {
-  return usersDb.prepare('SELECT id, email, created FROM users LIMIT ? OFFSET ?').all(limit, offset);
+  return usersDb.prepare('SELECT id, email, created FROM users ORDER BY id LIMIT ? OFFSET ?').all(limit, offset);
 }
 
 export function getById(id) {
   return usersDb.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
 }
 
-export function register(email, password) {
-  const { salt, hash } = hashPassword(password);
-  const stmt = usersDb.prepare('INSERT INTO users (email, hash, salt) VALUES (?, ?, ?)');
+export async function register(email, password) {
+  const normalizedEmail = email.toLowerCase();
+  const { salt, hash } = await hashPassword(password);
+  const stmt = usersDb.prepare(
+    'INSERT INTO users (email, hash, salt) VALUES (?, ?, ?) RETURNING id, email, created'
+  );
 
   try {
-    const info = stmt.run(email, hash, salt);
+    const user = stmt.get(normalizedEmail, hash, salt);
 
-    console.log(`User "${email}" registered.`);
+    console.log(`User "${normalizedEmail}" registered.`);
 
-    return usersDb.prepare('SELECT id, email, created FROM users WHERE id = ?').get(info.lastInsertRowid);
+    return user;
   } catch (e) {
     console.error('Registration failed:', e.message);
 
@@ -34,16 +37,16 @@ export function register(email, password) {
 }
 
 export function updateEmailById(id, newEmail) {
-  const stmt = usersDb.prepare('UPDATE users SET email = ? WHERE id = ?');
+  const normalizedEmail = newEmail.toLowerCase();
+  const stmt = usersDb.prepare('UPDATE users SET email = ? WHERE id = ? RETURNING id, email, created');
 
   try {
-    const info = stmt.run(newEmail, id);
+    const updatedUser = stmt.get(normalizedEmail, id);
 
-    if (info.changes === 0) {
+    if (!updatedUser) {
       throw new NotFoundError(`No user found with id "${id}".`);
     }
 
-    const updatedUser = usersDb.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
     return updatedUser;
   } catch (e) {
     if (e instanceof NotFoundError) throw e;

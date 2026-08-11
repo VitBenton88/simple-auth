@@ -28,7 +28,7 @@ test('a non-admin user cannot list all users', async () => {
 
   try {
     const email = uniqueEmail('non-admin-list');
-    register(email, 'a-strong-password');
+    await register(email, 'a-strong-password');
     const token = await loginAs(base, email, 'a-strong-password');
 
     const res = await fetch(`${base}/users`, { headers: { Authorization: `Bearer ${token}` } });
@@ -44,14 +44,14 @@ test('a non-admin user cannot fetch another user by id', async () => {
 
   try {
     const victimEmail = uniqueEmail('victim');
-    register(victimEmail, 'a-strong-password');
+    await register(victimEmail, 'a-strong-password');
     const victimToken = await loginAs(base, victimEmail, 'a-strong-password');
     const victimMe = await (await fetch(`${base}/auth/me`, {
       headers: { Authorization: `Bearer ${victimToken}` },
     })).json();
 
     const attackerEmail = uniqueEmail('attacker');
-    register(attackerEmail, 'a-strong-password');
+    await register(attackerEmail, 'a-strong-password');
     const attackerToken = await loginAs(base, attackerEmail, 'a-strong-password');
 
     const res = await fetch(`${base}/users/${victimMe.id}`, {
@@ -70,7 +70,7 @@ test('an admin (per ADMIN_EMAILS) can list all users and view any user', async (
 
   try {
     const adminEmail = uniqueEmail('admin');
-    register(adminEmail, 'a-strong-password');
+    await register(adminEmail, 'a-strong-password');
     process.env.ADMIN_EMAILS = adminEmail;
     const adminToken = await loginAs(base, adminEmail, 'a-strong-password');
 
@@ -78,7 +78,7 @@ test('an admin (per ADMIN_EMAILS) can list all users and view any user', async (
     assert.equal(listRes.status, 200);
 
     const otherEmail = uniqueEmail('other');
-    register(otherEmail, 'a-strong-password');
+    await register(otherEmail, 'a-strong-password');
     const other = getAll().find((u) => u.email === otherEmail);
 
     const getRes = await fetch(`${base}/users/${other.id}`, { headers: { Authorization: `Bearer ${adminToken}` } });
@@ -94,7 +94,7 @@ test('a non-admin user cannot list or read logs', async () => {
 
   try {
     const email = uniqueEmail('non-admin-logs');
-    register(email, 'a-strong-password');
+    await register(email, 'a-strong-password');
     const token = await loginAs(base, email, 'a-strong-password');
 
     const listRes = await fetch(`${base}/logs`, { headers: { Authorization: `Bearer ${token}` } });

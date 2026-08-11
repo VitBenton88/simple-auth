@@ -28,7 +28,10 @@ npm install
 
 | Variable | Description | Default |
 |---|---|---|
-| `JWT_SECRET` | Secret used to sign JWTs | `super-secret-key` |
+| `JWT_SECRET` | Secret used to sign JWTs. **Required** — the server refuses to sign/verify tokens without it (no insecure fallback). | *(none — required)* |
+| `ADMIN_EMAILS` | Comma-separated list of emails allowed to list all users and read the audit logs. | *(none — no admins)* |
+| `CORS_ORIGIN` | Origin allowed to make credentialed cross-origin requests (e.g. the `login-ui` dev server). If unset, cross-origin browser requests are blocked. | *(none — disabled)* |
+| `NODE_ENV` | Set to `production` to mark the refresh-token cookie `Secure` (requires HTTPS). | *(none)* |
 
 Set `JWT_SECRET` to a long random string in production.
 
@@ -57,9 +60,9 @@ Server starts on `http://localhost:3000`.
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/auth/login` | No | Login, returns access token |
-| `POST` | `/auth/logout` | No | Clears refresh token cookie |
-| `POST` | `/auth/refresh` | Cookie | Issues a new access token |
+| `POST` | `/auth/login` | No | Login, returns access token (rate limited) |
+| `POST` | `/auth/logout` | No | Revokes and clears the refresh token cookie |
+| `POST` | `/auth/refresh` | Cookie | Issues a new access token (rate limited) |
 | `GET` | `/auth/me` | Yes | Returns the authenticated user's ID |
 
 **POST /auth/login**
@@ -74,13 +77,13 @@ Response: `{ "accessToken": "..." }`
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `POST` | `/users/create` | No | Register a new user |
-| `GET` | `/users` | Yes | List all users |
-| `GET` | `/users/:id` | Yes | Get a user by ID |
-| `PUT` | `/users/update/:id` | Yes | Update own email |
-| `DELETE` | `/users/delete/:id` | Yes | Delete own account |
+| `POST` | `/users/create` | No | Register a new user (rate limited) |
+| `GET` | `/users` | Admin | List all users |
+| `GET` | `/users/:id` | Owner or Admin | Get a user by ID |
+| `PUT` | `/users/update/:id` | Owner | Update own email |
+| `DELETE` | `/users/delete/:id` | Owner | Delete own account |
 
-Users can only update or delete their own account.
+Users can only update or delete their own account. `GET /users` and `GET /logs` require the caller's email to be listed in `ADMIN_EMAILS`. `GET /users/:id` allows either the account owner or an admin.
 
 **POST /users/create**
 ```json
@@ -98,5 +101,5 @@ Users can only update or delete their own account.
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| `GET` | `/logs` | Yes | List all logs |
-| `GET` | `/logs/:id` | Yes | Get a log entry by ID |
+| `GET` | `/logs` | Admin | List all logs |
+| `GET` | `/logs/:id` | Admin | Get a log entry by ID |

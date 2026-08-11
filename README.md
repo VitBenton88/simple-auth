@@ -14,7 +14,7 @@ A minimal Express-based authentication server using SQLite. For a compatible fro
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v23+
+- [Node.js](https://nodejs.org/) v22+ (an even-numbered LTS line)
 
 ### Installation
 

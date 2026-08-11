@@ -31,7 +31,8 @@ npm install
 | `JWT_SECRET` | Secret used to sign JWTs. **Required** — the server refuses to sign/verify tokens without it (no insecure fallback). | *(none — required)* |
 | `ADMIN_EMAILS` | Comma-separated list of emails allowed to list all users and read the audit logs. | *(none — no admins)* |
 | `CORS_ORIGIN` | Origin allowed to make credentialed cross-origin requests (e.g. the `login-ui` dev server). If unset, cross-origin browser requests are blocked. | *(none — disabled)* |
-| `NODE_ENV` | Set to `production` to mark the refresh-token cookie `Secure` (requires HTTPS). | *(none)* |
+| `COOKIE_SECURE` | Set to `false` to allow the refresh-token cookie over plain HTTP (local development only). Secure by default. | *(none — secure)* |
+| `TRUST_PROXY` | Tells Express how many reverse-proxy hops (e.g. `1`) sit in front of it, or any other value its [`trust proxy` setting](https://expressjs.com/en/guide/behind-proxies.html) accepts. **Required if this service runs behind a proxy/load balancer** — without it, rate-limited routes (`/auth/login`, `/auth/refresh`, `/users/create`) will error on every request that carries an `X-Forwarded-For` header. | *(none — assumes no proxy)* |
 
 Set `JWT_SECRET` to a long random string in production.
 

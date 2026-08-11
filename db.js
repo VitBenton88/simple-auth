@@ -6,11 +6,20 @@ const logsDbPath = process.env.LOGS_DB_PATH || 'logs.db';
 const logsDb = new Database(logsDbPath);
 const usersDb = new Database(usersDbPath);
 
+// WAL lets reads and writes proceed concurrently instead of blocking each
+// other under the default rollback-journal mode; busy_timeout makes a
+// connection retry briefly on SQLITE_BUSY instead of failing immediately
+// if another process/connection is mid-write.
+for (const db of [logsDb, usersDb]) {
+  db.pragma('journal_mode = WAL');
+  db.pragma('busy_timeout = 5000');
+}
+
 logsDb.prepare(`
   CREATE TABLE IF NOT EXISTS logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT,
-    success INTEGER NOT NULL, -- 0 or 1
+    success INTEGER NOT NULL CHECK (success IN (0, 1)),
     timestamp TEXT NOT NULL DEFAULT (datetime('now')),
     message TEXT
   )

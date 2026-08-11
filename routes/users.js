@@ -4,7 +4,7 @@ import {create as createLog} from '../services/logging.js';
 import { requireAdmin, requireAuth } from './middleware.js';
 import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
 import { ConflictError, NotFoundError } from '../services/errors.js';
-import { isValidEmail, isValidPassword } from '../validation.js'
+import { isValidEmail, isValidId, isValidPassword } from '../validation.js'
 import { parsePagination } from './pagination.js';
 
 const router = express.Router();
@@ -31,6 +31,10 @@ router.get('/', requireAuth, requireAdmin, (req, res) => {
 router.get('/:id', requireAuth, (req, res) => {
   const { id } = req.params;
 
+  if (!isValidId(id)) {
+    return res.status(400).json({ error: 'Invalid user id.' });
+  }
+
   if (req.user.id !== parseInt(id) && !req.user.isAdmin) {
     return res.status(403).json({ error: 'Forbidden: cannot view another user.' });
   }
@@ -49,7 +53,7 @@ router.get('/:id', requireAuth, (req, res) => {
   }
 });
 
-router.post('/create', registerLimiter, (req, res) => {
+router.post('/create', registerLimiter, async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -65,7 +69,7 @@ router.post('/create', registerLimiter, (req, res) => {
   }
 
   try {
-    const user = register(email, password);
+    const user = await register(email, password);
     createLog(email, 1, 'Registration successful');
     res.status(201).json({ message: `User "${email}" registered successfully.`, user });
   } catch (err) {
@@ -82,6 +86,10 @@ router.post('/create', registerLimiter, (req, res) => {
 router.put('/update/:id', requireAuth, (req, res) => {
   const { id } = req.params;
   const { email } = req.body;
+
+  if (!isValidId(id)) {
+    return res.status(400).json({ error: 'Invalid user id.' });
+  }
 
   if (req.user.id !== parseInt(id)) {
     return res.status(403).json({ error: 'Forbidden: cannot modify another user.' });
@@ -116,6 +124,10 @@ router.put('/update/:id', requireAuth, (req, res) => {
 
 router.delete('/delete/:id', requireAuth, (req, res) => {
   const { id } = req.params;
+
+  if (!isValidId(id)) {
+    return res.status(400).json({ error: 'Invalid user id.' });
+  }
 
   if (req.user.id !== parseInt(id)) {
     return res.status(403).json({ error: 'Forbidden: cannot delete another user.' });

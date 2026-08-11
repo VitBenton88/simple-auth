@@ -26,5 +26,7 @@ Thumbs.db
 # Optional eslint cache
 .eslintcache
 
-# DB
+# DB (includes WAL-mode sidecar files: *.db-wal, *.db-shm)
 *.db
+*.db-wal
+*.db-shm

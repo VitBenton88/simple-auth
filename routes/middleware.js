@@ -2,13 +2,23 @@ import { create } from '../services/logging.js';
 import { verify } from '../services/jwt.js';
 import { getById } from '../services/users.js';
 
-function isAdminEmail(email) {
-  const admins = (process.env.ADMIN_EMAILS || '')
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
+// Cached rather than recomputed on every request, but keyed off the raw
+// env var so it still picks up a change — ADMIN_EMAILS is mutated at
+// runtime by this repo's own tests (and could be in a real deployment
+// that reconfigures env without a restart), so a one-time cache computed
+// at module load would go stale.
+let cachedAdminEmailsRaw;
+let cachedAdmins;
 
-  return admins.includes(email.toLowerCase());
+function isAdminEmail(email) {
+  const raw = process.env.ADMIN_EMAILS || '';
+
+  if (raw !== cachedAdminEmailsRaw) {
+    cachedAdminEmailsRaw = raw;
+    cachedAdmins = raw.split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+  }
+
+  return cachedAdmins.includes(email.toLowerCase());
 }
 
 export function requireAuth(req, res, next) {

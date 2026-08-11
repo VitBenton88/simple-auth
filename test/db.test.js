@@ -21,3 +21,8 @@ test('users table has a token_version column defaulting to 0', () => {
 
   assert.equal(row.token_version, 0);
 });
+
+test('logs table has an index on timestamp to support ORDER BY without a full scan', () => {
+  const indexes = dbs.logsDb.prepare('PRAGMA index_list(logs)').all().map((i) => i.name);
+  assert.ok(indexes.includes('idx_logs_timestamp'), 'expected an index on logs.timestamp');
+});

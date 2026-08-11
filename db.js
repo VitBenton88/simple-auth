@@ -16,6 +16,10 @@ logsDb.prepare(`
   )
 `).run();
 
+// Supports ORDER BY timestamp DESC, id DESC in services/logging.js getAll()
+// without a full table scan as the logs table grows.
+logsDb.prepare('CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs(timestamp DESC, id DESC)').run();
+
 usersDb.prepare(`
   CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

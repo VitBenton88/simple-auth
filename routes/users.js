@@ -5,6 +5,7 @@ import { requireAdmin, requireAuth } from './middleware.js';
 import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
 import { ConflictError, NotFoundError } from '../services/errors.js';
 import { isValidEmail, isValidPassword } from '../validation.js'
+import { parsePagination } from './pagination.js';
 
 const router = express.Router();
 
@@ -18,7 +19,8 @@ const registerLimiter = rateLimit({
 
 router.get('/', requireAuth, requireAdmin, (req, res) => {
   try {
-    const users = getAll();
+    const { limit, offset } = parsePagination(req.query);
+    const users = getAll(limit, offset);
     return res.json(users);
   } catch (err) {
     createLog('Unknown', 0, `Failed to fetch users: ${err.message}`);

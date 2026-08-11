@@ -4,8 +4,8 @@ import { ConflictError, NotFoundError } from './errors.js';
 
 const { usersDb } = dbs;
 
-export function getAll() {
-  return usersDb.prepare('SELECT id, email, created FROM users').all();
+export function getAll(limit = 50, offset = 0) {
+  return usersDb.prepare('SELECT id, email, created FROM users LIMIT ? OFFSET ?').all(limit, offset);
 }
 
 export function getById(id) {

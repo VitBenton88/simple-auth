@@ -12,9 +12,9 @@ export function create(email, success, message) {
   }
 }
 
-export function getAll() {
+export function getAll(limit = 50, offset = 0) {
   try {
-    return logsDb.prepare('SELECT * FROM logs ORDER BY timestamp DESC').all();
+    return logsDb.prepare('SELECT * FROM logs ORDER BY timestamp DESC, id DESC LIMIT ? OFFSET ?').all(limit, offset);
   } catch (e) {
     console.error('Failed to fetch logs: ', e.message);
     return [];

@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 import {create as createLog} from '../services/logging.js';
 import { requireAdmin, requireAuth } from './middleware.js';
 import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
-import { isValidEmail } from '../validation.js'
+import { isValidEmail, isValidPassword } from '../validation.js'
 
 const router = express.Router();
 
@@ -55,6 +55,10 @@ router.post('/create', registerLimiter, (req, res) => {
 
   if (!isValidEmail(email)) {
     return res.status(400).json({ error: 'Invalid email format.' });
+  }
+
+  if (!isValidPassword(password)) {
+    return res.status(400).json({ error: 'Password must be between 8 and 128 characters.' });
   }
 
   try {

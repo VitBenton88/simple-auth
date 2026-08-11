@@ -95,10 +95,10 @@ router.put('/update/:id', requireAuth, (req, res) => {
 
   try {
     const updatedUser = updateEmailById(id, email);
-    createLog(req.user.id, 1, `Updated for user ID: ${id}`);
+    createLog(req.user.email, 1, `Updated for user ID: ${id}`);
     res.status(200).json({ message: `User updated successfully.`, user: updatedUser });
   } catch (err) {
-    createLog(req.user.id, 0, `Failed to update for user ID: ${id}`);
+    createLog(req.user.email, 0, `Failed to update for user ID: ${id}`);
 
     if (err instanceof NotFoundError) {
       return res.status(404).json({ error: err.message });
@@ -125,10 +125,10 @@ router.delete('/delete/:id', requireAuth, (req, res) => {
 
   try {
     deleteById(id);
-    createLog(req.user.id, 1, `Deleted user ID: ${id}`);
+    createLog(req.user.email, 1, `Deleted user ID: ${id}`);
     res.status(200).json({ message: `User with ID "${id}" deleted successfully.` });
   } catch (err) {
-    createLog(req.user.id, 0, `Failed to delete user ID: ${id}`);
+    createLog(req.user.email, 0, `Failed to delete user ID: ${id}`);
 
     if (err instanceof NotFoundError) {
       return res.status(404).json({ error: err.message });

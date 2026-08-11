@@ -71,3 +71,38 @@ test('CORS_ORIGIN, when set, is echoed back with credentials allowed', async () 
     server.close();
   }
 });
+
+test('CORS_ORIGIN with multiple origins allows a request from any listed origin', async () => {
+  const saved = process.env.CORS_ORIGIN;
+  process.env.CORS_ORIGIN = 'http://localhost:5173,https://staging.example.com';
+  const { server, base } = await startServer();
+
+  try {
+    const res = await fetch(`${base}/auth/me`, {
+      headers: { Origin: 'https://staging.example.com', Authorization: 'Bearer bogus' },
+    });
+
+    assert.equal(res.headers.get('access-control-allow-origin'), 'https://staging.example.com');
+    assert.equal(res.headers.get('access-control-allow-credentials'), 'true');
+  } finally {
+    server.close();
+    process.env.CORS_ORIGIN = saved;
+  }
+});
+
+test('CORS_ORIGIN blocks a request from an origin not in the list', async () => {
+  const saved = process.env.CORS_ORIGIN;
+  process.env.CORS_ORIGIN = 'http://localhost:5173';
+  const { server, base } = await startServer();
+
+  try {
+    const res = await fetch(`${base}/auth/me`, {
+      headers: { Origin: 'https://evil.example.com', Authorization: 'Bearer bogus' },
+    });
+
+    assert.equal(res.headers.get('access-control-allow-origin'), null);
+  } finally {
+    server.close();
+    process.env.CORS_ORIGIN = saved;
+  }
+});

@@ -19,8 +19,30 @@ export const app = express();
 
 app.use(helmet());
 
+// Cached rather than recomputed on every request, but keyed off the raw
+// env var so it still picks up a change — mirrors the ADMIN_EMAILS pattern
+// in routes/middleware.js so tests can mutate process.env.CORS_ORIGIN directly.
+let cachedCorsOriginRaw;
+let cachedCorsOrigins;
+
+function getAllowedOrigins() {
+  const raw = process.env.CORS_ORIGIN || '';
+  if (raw !== cachedCorsOriginRaw) {
+    cachedCorsOriginRaw = raw;
+    cachedCorsOrigins = raw.split(',').map((o) => o.trim()).filter(Boolean);
+  }
+  return cachedCorsOrigins;
+}
+
 if (process.env.CORS_ORIGIN) {
-  app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
+  app.use(
+    cors({
+      origin(requestOrigin, callback) {
+        callback(null, getAllowedOrigins().includes(requestOrigin) ? true : false);
+      },
+      credentials: true,
+    })
+  );
 } else {
   console.warn('CORS_ORIGIN is not set; cross-origin browser requests will be blocked.');
 }

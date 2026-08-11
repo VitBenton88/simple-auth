@@ -89,6 +89,70 @@ test('an admin (per ADMIN_EMAILS) can list all users and view any user', async (
   }
 });
 
+test('a non-admin user cannot update or delete another user', async () => {
+  const { server, base } = await startServer();
+
+  try {
+    const victimEmail = uniqueEmail('victim-mod');
+    await register(victimEmail, 'a-strong-password');
+    const victim = getAll().find((u) => u.email === victimEmail);
+
+    const attackerEmail = uniqueEmail('attacker-mod');
+    await register(attackerEmail, 'a-strong-password');
+    const attackerToken = await loginAs(base, attackerEmail, 'a-strong-password');
+
+    const updateRes = await fetch(`${base}/users/update/${victim.id}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${attackerToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: uniqueEmail('hijacked') }),
+    });
+    assert.equal(updateRes.status, 403);
+
+    const deleteRes = await fetch(`${base}/users/delete/${victim.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${attackerToken}` },
+    });
+    assert.equal(deleteRes.status, 403);
+  } finally {
+    server.close();
+  }
+});
+
+test("an admin (per ADMIN_EMAILS) can update and delete another user's account", async () => {
+  const { server, base } = await startServer();
+  const originalAdmins = process.env.ADMIN_EMAILS;
+
+  try {
+    const adminEmail = uniqueEmail('admin-mod');
+    await register(adminEmail, 'a-strong-password');
+    process.env.ADMIN_EMAILS = adminEmail;
+    const adminToken = await loginAs(base, adminEmail, 'a-strong-password');
+
+    const otherEmail = uniqueEmail('other-mod');
+    await register(otherEmail, 'a-strong-password');
+    const other = getAll().find((u) => u.email === otherEmail);
+
+    const newEmail = uniqueEmail('admin-updated');
+    const updateRes = await fetch(`${base}/users/update/${other.id}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${adminToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: newEmail }),
+    });
+    assert.equal(updateRes.status, 200);
+    assert.equal((await updateRes.json()).user.email, newEmail);
+
+    const deleteRes = await fetch(`${base}/users/delete/${other.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${adminToken}` },
+    });
+    assert.equal(deleteRes.status, 204);
+    assert.equal(getAll().find((u) => u.id === other.id), undefined);
+  } finally {
+    process.env.ADMIN_EMAILS = originalAdmins;
+    server.close();
+  }
+});
+
 test('a non-admin user cannot list or read logs', async () => {
   const { server, base } = await startServer();
 

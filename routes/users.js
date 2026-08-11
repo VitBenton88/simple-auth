@@ -1,10 +1,19 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import {create as createLog} from '../services/logging.js';
 import { requireAdmin, requireAuth } from './middleware.js';
 import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
 import { isValidEmail } from '../validation.js'
 
 const router = express.Router();
+
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 20,
+  message: { error: 'Too many registration attempts. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 router.get('/', requireAuth, requireAdmin, (req, res) => {
   try {
@@ -37,7 +46,7 @@ router.get('/:id', requireAuth, (req, res) => {
   }
 });
 
-router.post('/create', (req, res) => {
+router.post('/create', registerLimiter, (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {

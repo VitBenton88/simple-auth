@@ -128,7 +128,7 @@ router.delete('/delete/:id', requireAuth, (req, res) => {
   try {
     deleteById(id);
     createLog(req.user.email, 1, `Deleted user ID: ${id}`);
-    res.status(200).json({ message: `User with ID "${id}" deleted successfully.` });
+    res.status(204).end();
   } catch (err) {
     createLog(req.user.email, 0, `Failed to delete user ID: ${id}`);
 

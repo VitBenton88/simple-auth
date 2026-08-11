@@ -81,7 +81,7 @@ Response: `{ "accessToken": "..." }`
 | `GET` | `/users` | Admin | List all users |
 | `GET` | `/users/:id` | Owner or Admin | Get a user by ID |
 | `PUT` | `/users/update/:id` | Owner | Update own email |
-| `DELETE` | `/users/delete/:id` | Owner | Delete own account |
+| `DELETE` | `/users/delete/:id` | Owner | Delete own account (204 No Content on success) |
 
 Users can only update or delete their own account. `GET /users` and `GET /logs` require the caller's email to be listed in `ADMIN_EMAILS`. `GET /users/:id` allows either the account owner or an admin.
 

@@ -114,3 +114,37 @@ test('updating a user logs the actor by email, not by numeric id', async () => {
     server.close();
   }
 });
+
+test('deleting own account returns 204 with no response body', async () => {
+  const { server, base } = await startServer();
+
+  try {
+    const email = uniqueEmail('delete-204');
+    await fetch(`${base}/users/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'a-strong-password' }),
+    });
+
+    const loginRes = await fetch(`${base}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'a-strong-password' }),
+    });
+    const { accessToken } = await loginRes.json();
+
+    const meRes = await fetch(`${base}/auth/me`, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const { id } = await meRes.json();
+
+    const res = await fetch(`${base}/users/delete/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    assert.equal(res.status, 204);
+    const bodyText = await res.text();
+    assert.equal(bodyText, '');
+  } finally {
+    server.close();
+  }
+});

@@ -1,26 +1,29 @@
 import express from 'express';
 import { getById, getAll } from '../services/logging.js';
-import { requireAuth } from './middleware.js';
+import { requireAdmin, requireAuth } from './middleware.js';
 
 const router = express.Router();
 
-router.get('{/:id}', requireAuth, (req, res) => {
+router.get('/', requireAuth, requireAdmin, (req, res) => {
   try {
-    if (req.params.id) {
-      const log = getById(req.params.id);
-
-      if (!log) {
-        return res.status(404).json({ error: 'Log not found.' });
-      }
-
-      return res.json(log);
-    } else {
-      // Get all logs when no ID is provided
-      const logs = getAll();
-      return res.json(logs);
-    }
+    const logs = getAll();
+    return res.json(logs);
   } catch (err) {
-    return res.status(500).json({ error: 'Failed to fetch log(s).' });
+    return res.status(500).json({ error: 'Failed to fetch logs.' });
+  }
+});
+
+router.get('/:id', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const log = getById(req.params.id);
+
+    if (!log) {
+      return res.status(404).json({ error: 'Log not found.' });
+    }
+
+    return res.json(log);
+  } catch (err) {
+    return res.status(500).json({ error: 'Failed to fetch log.' });
   }
 });
 

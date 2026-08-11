@@ -1,28 +1,39 @@
 import express from 'express';
 import {create as createLog} from '../services/logging.js';
-import { requireAuth } from './middleware.js';
+import { requireAdmin, requireAuth } from './middleware.js';
 import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
 import { isValidEmail } from '../validation.js'
 
 const router = express.Router();
 
-router.get('{/:id}', requireAuth, (req, res) => {
+router.get('/', requireAuth, requireAdmin, (req, res) => {
   try {
-    if (req.params.id) {
-      const user = getById(req.params.id);
-
-      if (!user) {
-        return res.status(404).json({ error: 'User not found.' });
-      }
-
-      return res.json(user);
-    } else {
-      const users = getAll();
-      return res.json(users);
-    }
+    const users = getAll();
+    return res.json(users);
   } catch (err) {
-    createLog('Unknown', 0, `Failed to fetch user(s): ${err.message}`);
-    return res.status(500).json({ error: 'Failed to fetch user(s).' });
+    createLog('Unknown', 0, `Failed to fetch users: ${err.message}`);
+    return res.status(500).json({ error: 'Failed to fetch users.' });
+  }
+});
+
+router.get('/:id', requireAuth, (req, res) => {
+  const { id } = req.params;
+
+  if (req.user.id !== parseInt(id) && !req.user.isAdmin) {
+    return res.status(403).json({ error: 'Forbidden: cannot view another user.' });
+  }
+
+  try {
+    const user = getById(id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    return res.json(user);
+  } catch (err) {
+    createLog('Unknown', 0, `Failed to fetch user: ${err.message}`);
+    return res.status(500).json({ error: 'Failed to fetch user.' });
   }
 });
 

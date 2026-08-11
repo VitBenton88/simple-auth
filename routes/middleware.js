@@ -2,6 +2,15 @@ import { create } from '../services/logging.js';
 import { verify } from '../services/jwt.js';
 import { getById } from '../services/users.js';
 
+function isAdminEmail(email) {
+  const admins = (process.env.ADMIN_EMAILS || '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  return admins.includes(email.toLowerCase());
+}
+
 export function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
 
@@ -25,6 +34,14 @@ export function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Unauthorized: User no longer exists' });
   }
 
-  req.user = { id: user.id, email: user.email };
+  req.user = { id: user.id, email: user.email, isAdmin: isAdminEmail(user.email) };
+  next();
+}
+
+export function requireAdmin(req, res, next) {
+  if (!req.user?.isAdmin) {
+    return res.status(403).json({ error: 'Forbidden: admin access required.' });
+  }
+
   next();
 }

@@ -1,7 +1,10 @@
 import Database from 'better-sqlite3';
 
-const logsDb = new Database('logs.db');
-const usersDb = new Database('users.db');
+const usersDbPath = process.env.USERS_DB_PATH || 'users.db';
+const logsDbPath = process.env.LOGS_DB_PATH || 'logs.db';
+
+const logsDb = new Database(logsDbPath);
+const usersDb = new Database(usersDbPath);
 
 logsDb.prepare(`
   CREATE TABLE IF NOT EXISTS logs (

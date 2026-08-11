@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node app.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "USERS_DB_PATH=:memory: LOGS_DB_PATH=:memory: JWT_SECRET=test-secret-do-not-use-in-prod CORS_ORIGIN=http://localhost:5173 node --test"
   },
   "keywords": [],
   "author": "",

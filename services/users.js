@@ -17,9 +17,11 @@ export function register(email, password) {
   const stmt = usersDb.prepare('INSERT INTO users (email, hash, salt) VALUES (?, ?, ?)');
 
   try {
-    stmt.run(email, hash, salt);
+    const info = stmt.run(email, hash, salt);
 
     console.log(`User "${email}" registered.`);
+
+    return usersDb.prepare('SELECT id, email, created FROM users WHERE id = ?').get(info.lastInsertRowid);
   } catch (e) {
     console.error('Registration failed:', e.message);
 

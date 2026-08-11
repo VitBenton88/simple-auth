@@ -65,9 +65,9 @@ router.post('/create', registerLimiter, (req, res) => {
   }
 
   try {
-    register(email, password);
+    const user = register(email, password);
     createLog(email, 1, 'Registration successful');
-    res.status(201).json({ message: `User "${email}" registered successfully.` });
+    res.status(201).json({ message: `User "${email}" registered successfully.`, user });
   } catch (err) {
     createLog(email, 0, `Registration failed: ${err.message}`);
 

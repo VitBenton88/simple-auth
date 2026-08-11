@@ -89,11 +89,15 @@ Users can only update or delete their own account. `GET /users` and `GET /logs` 
 ```json
 { "email": "user@example.com", "password": "secret" }
 ```
+Password must be 8-128 characters. Response: `{ "message": "...", "user": { "id": 1, "email": "...", "created": "..." } }`
+
+**GET /users** and **GET /logs** accept `?limit=` (default 50, max 200) and `?offset=` (default 0) query params.
 
 **PUT /users/update/:id**
 ```json
 { "email": "new@example.com" }
 ```
+Response: `{ "message": "...", "user": { "id": 1, "email": "...", "created": "..." } }`
 
 ---
 

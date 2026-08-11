@@ -29,3 +29,28 @@ test('registration rejects a password shorter than the minimum length', async ()
     server.close();
   }
 });
+
+test('registering an email that already exists returns 409', async () => {
+  const { server, base } = await startServer();
+
+  try {
+    const email = uniqueEmail('route-dup');
+    const payload = { email, password: 'a-strong-password' };
+
+    await fetch(`${base}/users/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const res = await fetch(`${base}/users/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    assert.equal(res.status, 409);
+  } finally {
+    server.close();
+  }
+});

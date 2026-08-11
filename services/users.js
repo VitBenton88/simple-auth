@@ -1,5 +1,6 @@
 import dbs from '../db.js';
 import { hashPassword } from './helpers.js';
+import { ConflictError, NotFoundError } from './errors.js';
 
 const { usersDb } = dbs;
 
@@ -21,6 +22,11 @@ export function register(email, password) {
     console.log(`User "${email}" registered.`);
   } catch (e) {
     console.error('Registration failed:', e.message);
+
+    if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      throw new ConflictError('A user with that email already exists.');
+    }
+
     throw new Error('Registration failed.', { cause: e.message });
   }
 }
@@ -32,13 +38,20 @@ export function updateEmailById(id, newEmail) {
     const info = stmt.run(newEmail, id);
 
     if (info.changes === 0) {
-      throw new Error(`No user found with id "${id}".`);
+      throw new NotFoundError(`No user found with id "${id}".`);
     }
 
     const updatedUser = usersDb.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
     return updatedUser;
   } catch (e) {
+    if (e instanceof NotFoundError) throw e;
+
     console.error('Email update failed:', e.message);
+
+    if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+      throw new ConflictError('That email is already in use.');
+    }
+
     throw new Error('Email update failed.', { cause: e.message });
   }
 }
@@ -50,11 +63,13 @@ export function deleteById(id) {
     const info = stmt.run(id);
 
     if (info.changes === 0) {
-      throw new Error(`No user found with id "${id}".`);
+      throw new NotFoundError(`No user found with id "${id}".`);
     }
 
     console.log(`User with id "${id}" deleted.`);
   } catch (e) {
+    if (e instanceof NotFoundError) throw e;
+
     console.error('Deletion failed:', e.message);
     throw new Error('User deletion failed.', { cause: e.message });
   }

@@ -3,6 +3,7 @@ import rateLimit from 'express-rate-limit';
 import {create as createLog} from '../services/logging.js';
 import { requireAdmin, requireAuth } from './middleware.js';
 import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
+import { ConflictError, NotFoundError } from '../services/errors.js';
 import { isValidEmail, isValidPassword } from '../validation.js'
 
 const router = express.Router();
@@ -67,7 +68,12 @@ router.post('/create', registerLimiter, (req, res) => {
     res.status(201).json({ message: `User "${email}" registered successfully.` });
   } catch (err) {
     createLog(email, 0, `Registration failed: ${err.message}`);
-    res.status(409).json({ error: 'User already exists or registration failed.' });
+
+    if (err instanceof ConflictError) {
+      return res.status(409).json({ error: err.message });
+    }
+
+    res.status(500).json({ error: 'Registration failed.' });
   }
 });
 
@@ -93,7 +99,16 @@ router.put('/update/:id', requireAuth, (req, res) => {
     res.status(200).json({ message: `User updated successfully.`, user: updatedUser });
   } catch (err) {
     createLog(req.user.id, 0, `Failed to update for user ID: ${id}`);
-    res.status(404).json({ error: err.message || 'User not found or update failed.' });
+
+    if (err instanceof NotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+
+    if (err instanceof ConflictError) {
+      return res.status(409).json({ error: err.message });
+    }
+
+    res.status(500).json({ error: 'Update failed.' });
   }
 });
 
@@ -114,7 +129,12 @@ router.delete('/delete/:id', requireAuth, (req, res) => {
     res.status(200).json({ message: `User with ID "${id}" deleted successfully.` });
   } catch (err) {
     createLog(req.user.id, 0, `Failed to delete user ID: ${id}`);
-    res.status(404).json({ error: err.message || 'User not found or deletion failed.' });
+
+    if (err instanceof NotFoundError) {
+      return res.status(404).json({ error: err.message });
+    }
+
+    res.status(500).json({ error: 'Deletion failed.' });
   }
 });
 

@@ -32,7 +32,7 @@ export async function register(email, password) {
       throw new ConflictError('A user with that email already exists.');
     }
 
-    throw new Error('Registration failed.', { cause: e.message });
+    throw new Error('Registration failed.', { cause: e });
   }
 }
 
@@ -57,7 +57,7 @@ export function updateEmailById(id, newEmail) {
       throw new ConflictError('That email is already in use.');
     }
 
-    throw new Error('Email update failed.', { cause: e.message });
+    throw new Error('Email update failed.', { cause: e });
   }
 }
 
@@ -76,7 +76,7 @@ export function deleteById(id) {
     if (e instanceof NotFoundError) throw e;
 
     console.error('Deletion failed:', e.message);
-    throw new Error('User deletion failed.', { cause: e.message });
+    throw new Error('User deletion failed.', { cause: e });
   }
 }
 

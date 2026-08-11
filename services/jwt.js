@@ -62,7 +62,10 @@ export function verify(token) {
 
   const now = Math.floor(Date.now() / 1000);
 
-  return (payload.exp && payload.exp < now) ? null : payload;
+  // Reject explicitly rather than treat a missing/non-numeric exp as
+  // "never expires" — every token this service issues sets a numeric exp
+  // (createToken), so a payload without one shouldn't be trusted.
+  return (typeof payload.exp !== 'number' || payload.exp < now) ? null : payload;
 }
 
 export function createToken(id, expiresInSec = 3600, { type = 'access', ver } = {}) {

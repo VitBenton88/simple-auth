@@ -59,3 +59,12 @@ export function deleteById(id) {
     throw new Error('User deletion failed.', { cause: e.message });
   }
 }
+
+export function getTokenVersion(id) {
+  const row = usersDb.prepare('SELECT token_version FROM users WHERE id = ?').get(id);
+  return row ? row.token_version : null;
+}
+
+export function bumpTokenVersion(id) {
+  usersDb.prepare('UPDATE users SET token_version = token_version + 1 WHERE id = ?').run(id);
+}

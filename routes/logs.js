@@ -5,7 +5,7 @@ import { parsePagination } from './pagination.js';
 
 const router = express.Router();
 
-router.get('/', requireAuth, requireAdmin, (req, res) => {
+export function listLogsHandler(req, res) {
   try {
     const { limit, offset } = parsePagination(req.query);
     const logs = getAll(limit, offset);
@@ -14,9 +14,9 @@ router.get('/', requireAuth, requireAdmin, (req, res) => {
     createLog(req.user.email, 0, `Failed to fetch logs: ${err.message}`);
     return res.status(500).json({ error: 'Failed to fetch logs.' });
   }
-});
+}
 
-router.get('/:id', requireAuth, requireAdmin, (req, res) => {
+export function getLogHandler(req, res) {
   try {
     const log = getById(req.params.id);
 
@@ -29,6 +29,9 @@ router.get('/:id', requireAuth, requireAdmin, (req, res) => {
     createLog(req.user.email, 0, `Failed to fetch log: ${err.message}`);
     return res.status(500).json({ error: 'Failed to fetch log.' });
   }
-});
+}
+
+router.get('/', requireAuth, requireAdmin, listLogsHandler);
+router.get('/:id', requireAuth, requireAdmin, getLogHandler);
 
 export default router;

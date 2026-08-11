@@ -22,9 +22,9 @@ export async function login(email, password) {
   const stmt = usersDb.prepare('SELECT * FROM users WHERE email = ?');
   const user = stmt.get(email.toLowerCase());
 
-  if (!user?.id) {
+  if (!user) {
     await hashPassword(password, DUMMY_SALT);
-    return false;
+    return null;
   }
 
   const { hash } = await hashPassword(password, user.salt);

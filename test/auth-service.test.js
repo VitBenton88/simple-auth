@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { register, getTokenVersion, bumpTokenVersion } from '../services/users.js';
 import { login } from '../services/auth.js';
 
-test('login returns false for an email that does not exist', async () => {
-  assert.equal(await login('nobody@example.com', 'whatever'), false);
+test('login returns null for an email that does not exist', async () => {
+  assert.equal(await login('nobody@example.com', 'whatever'), null);
 });
 
 test('login returns null for a wrong password', async () => {

@@ -45,3 +45,9 @@ export function requireAdmin(req, res, next) {
 
   next();
 }
+
+// Callers are expected to have already validated `id` (e.g. with
+// isValidId) so it's safe to coerce directly rather than parseInt-ing.
+export function isOwner(req, id) {
+  return req.user.id === Number(id);
+}

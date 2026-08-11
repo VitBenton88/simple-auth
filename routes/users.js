@@ -1,10 +1,10 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
-import {create as createLog} from '../services/logging.js';
-import { requireAdmin, requireAuth } from './middleware.js';
+import { create as createLog } from '../services/logging.js';
+import { isOwner, requireAdmin, requireAuth } from './middleware.js';
 import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
 import { ConflictError, NotFoundError } from '../services/errors.js';
-import { isValidEmail, isValidId, isValidPassword } from '../validation.js'
+import { isValidEmail, isValidId, isValidPassword } from '../validation.js';
 import { parsePagination } from './pagination.js';
 
 const router = express.Router();
@@ -17,7 +17,7 @@ const registerLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-router.get('/', requireAuth, requireAdmin, (req, res) => {
+export function listUsersHandler(req, res) {
   try {
     const { limit, offset } = parsePagination(req.query);
     const users = getAll(limit, offset);
@@ -26,16 +26,16 @@ router.get('/', requireAuth, requireAdmin, (req, res) => {
     createLog('Unknown', 0, `Failed to fetch users: ${err.message}`);
     return res.status(500).json({ error: 'Failed to fetch users.' });
   }
-});
+}
 
-router.get('/:id', requireAuth, (req, res) => {
+export function getUserHandler(req, res) {
   const { id } = req.params;
 
   if (!isValidId(id)) {
     return res.status(400).json({ error: 'Invalid user id.' });
   }
 
-  if (req.user.id !== parseInt(id) && !req.user.isAdmin) {
+  if (!isOwner(req, id) && !req.user.isAdmin) {
     return res.status(403).json({ error: 'Forbidden: cannot view another user.' });
   }
 
@@ -51,14 +51,10 @@ router.get('/:id', requireAuth, (req, res) => {
     createLog('Unknown', 0, `Failed to fetch user: ${err.message}`);
     return res.status(500).json({ error: 'Failed to fetch user.' });
   }
-});
+}
 
-router.post('/create', registerLimiter, async (req, res) => {
+export async function registerHandler(req, res) {
   const { email, password } = req.body;
-
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required.' });
-  }
 
   if (!isValidEmail(email)) {
     return res.status(400).json({ error: 'Invalid email format.' });
@@ -81,9 +77,9 @@ router.post('/create', registerLimiter, async (req, res) => {
 
     res.status(500).json({ error: 'Registration failed.' });
   }
-});
+}
 
-router.put('/update/:id', requireAuth, (req, res) => {
+export function updateUserHandler(req, res) {
   const { id } = req.params;
   const { email } = req.body;
 
@@ -91,7 +87,7 @@ router.put('/update/:id', requireAuth, (req, res) => {
     return res.status(400).json({ error: 'Invalid user id.' });
   }
 
-  if (req.user.id !== parseInt(id)) {
+  if (!isOwner(req, id)) {
     return res.status(403).json({ error: 'Forbidden: cannot modify another user.' });
   }
 
@@ -120,16 +116,16 @@ router.put('/update/:id', requireAuth, (req, res) => {
 
     res.status(500).json({ error: 'Update failed.' });
   }
-});
+}
 
-router.delete('/delete/:id', requireAuth, (req, res) => {
+export function deleteUserHandler(req, res) {
   const { id } = req.params;
 
   if (!isValidId(id)) {
     return res.status(400).json({ error: 'Invalid user id.' });
   }
 
-  if (req.user.id !== parseInt(id)) {
+  if (!isOwner(req, id)) {
     return res.status(403).json({ error: 'Forbidden: cannot delete another user.' });
   }
 
@@ -146,6 +142,12 @@ router.delete('/delete/:id', requireAuth, (req, res) => {
 
     res.status(500).json({ error: 'Deletion failed.' });
   }
-});
+}
+
+router.get('/', requireAuth, requireAdmin, listUsersHandler);
+router.get('/:id', requireAuth, getUserHandler);
+router.post('/create', registerLimiter, registerHandler);
+router.put('/update/:id', requireAuth, updateUserHandler);
+router.delete('/delete/:id', requireAuth, deleteUserHandler);
 
 export default router;

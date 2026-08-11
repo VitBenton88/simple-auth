@@ -26,4 +26,13 @@ usersDb.prepare(`
   )
 `).run();
 
+// Migration: existing databases created before token-versioning was added
+// won't have this column, since CREATE TABLE IF NOT EXISTS is a no-op on
+// an already-existing table.
+const userColumns = usersDb.prepare('PRAGMA table_info(users)').all().map((c) => c.name);
+
+if (!userColumns.includes('token_version')) {
+  usersDb.prepare('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0').run();
+}
+
 export default { logsDb, usersDb };

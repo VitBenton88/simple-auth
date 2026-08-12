@@ -15,6 +15,10 @@ export function getAll(limit = 50, offset = 0) {
   return usersDb.prepare('SELECT id, email, created FROM users ORDER BY id LIMIT ? OFFSET ?').all(limit, offset);
 }
 
+export function count() {
+  return usersDb.prepare('SELECT COUNT(*) AS count FROM users').get().count;
+}
+
 export function getById(id) {
   return usersDb.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
 }

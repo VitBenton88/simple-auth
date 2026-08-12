@@ -1,5 +1,5 @@
 import express from 'express';
-import { create as createLog, getById, getAll } from '../services/logging.js';
+import { create as createLog, getById, getAll, count } from '../services/logging.js';
 import { requireAdmin, requireAuth } from './middleware.js';
 import { parsePagination } from './pagination.js';
 import { isValidId } from '../validation.js';
@@ -9,8 +9,9 @@ const router = express.Router();
 export function listLogsHandler(req, res) {
   try {
     const { limit, offset } = parsePagination(req.query);
-    const logs = getAll(limit, offset);
-    return res.json(logs);
+    const data = getAll(limit, offset);
+    const total = count();
+    return res.json({ data, total, limit, offset });
   } catch (err) {
     createLog(req.user.email, 0, `Failed to fetch logs: ${err.message}`);
     return res.status(500).json({ error: 'Failed to fetch logs.' });

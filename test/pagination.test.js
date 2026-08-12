@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { register, getAll as getAllUsers } from '../services/users.js';
-import { create as createLogEntry, getAll as getAllLogs } from '../services/logging.js';
+import { register, getAll as getAllUsers, count as countUsers } from '../services/users.js';
+import { create as createLogEntry, getAll as getAllLogs, count as countLogs } from '../services/logging.js';
 import { parsePagination } from '../routes/pagination.js';
 import { app } from '../app.js';
 
@@ -74,7 +74,7 @@ test('services/logging getAll respects limit and offset', () => {
   assert.notEqual(firstPage[0].id, secondPage[0].id);
 });
 
-test('GET /users respects a ?limit= query param', async () => {
+test('GET /users respects a ?limit= query param and returns a paginated envelope', async () => {
   const { server, base } = await startServer();
   const { accessToken, restoreAdmins } = await loginAsAdmin(base);
 
@@ -84,16 +84,19 @@ test('GET /users respects a ?limit= query param', async () => {
     }
 
     const res = await fetch(`${base}/users?limit=2`, { headers: { Authorization: `Bearer ${accessToken}` } });
-    const users = await res.json();
+    const body = await res.json();
 
-    assert.equal(users.length, 2);
+    assert.equal(body.data.length, 2);
+    assert.equal(body.limit, 2);
+    assert.equal(body.offset, 0);
+    assert.equal(body.total, countUsers());
   } finally {
     restoreAdmins();
     server.close();
   }
 });
 
-test('GET /logs respects a ?limit= query param', async () => {
+test('GET /logs respects a ?limit= query param and returns a paginated envelope', async () => {
   const { server, base } = await startServer();
   const { accessToken, restoreAdmins } = await loginAsAdmin(base);
 
@@ -103,9 +106,12 @@ test('GET /logs respects a ?limit= query param', async () => {
     }
 
     const res = await fetch(`${base}/logs?limit=2`, { headers: { Authorization: `Bearer ${accessToken}` } });
-    const logs = await res.json();
+    const body = await res.json();
 
-    assert.equal(logs.length, 2);
+    assert.equal(body.data.length, 2);
+    assert.equal(body.limit, 2);
+    assert.equal(body.offset, 0);
+    assert.equal(body.total, countLogs());
   } finally {
     restoreAdmins();
     server.close();

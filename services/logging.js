@@ -21,6 +21,10 @@ export function getAll(limit = 50, offset = 0) {
   return logsDb.prepare('SELECT * FROM logs ORDER BY timestamp DESC, id DESC LIMIT ? OFFSET ?').all(limit, offset);
 }
 
+export function count() {
+  return logsDb.prepare('SELECT COUNT(*) AS count FROM logs').get().count;
+}
+
 export function getById(id) {
   return logsDb.prepare('SELECT * FROM logs WHERE id = ?').get(id);
 }

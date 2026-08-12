@@ -2,7 +2,7 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import { create as createLog } from '../services/logging.js';
 import { isOwner, requireAdmin, requireAuth } from './middleware.js';
-import { deleteById, getAll, getById, register, updateEmailById } from '../services/users.js';
+import { deleteById, getAll, getById, register, updateEmailById, count } from '../services/users.js';
 import { ConflictError, NotFoundError } from '../services/errors.js';
 import { isValidEmail, isValidId, isValidPassword } from '../validation.js';
 import { parsePagination } from './pagination.js';
@@ -20,8 +20,9 @@ const registerLimiter = rateLimit({
 export function listUsersHandler(req, res) {
   try {
     const { limit, offset } = parsePagination(req.query);
-    const users = getAll(limit, offset);
-    return res.json(users);
+    const data = getAll(limit, offset);
+    const total = count();
+    return res.json({ data, total, limit, offset });
   } catch (err) {
     createLog('Unknown', 0, `Failed to fetch users: ${err.message}`);
     return res.status(500).json({ error: 'Failed to fetch users.' });

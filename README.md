@@ -72,13 +72,18 @@ The `services/*.js` modules (`login`, `register`, `updateEmailById`, etc.) are p
 | `POST` | `/auth/login` | No | Login, returns access token (rate limited) |
 | `POST` | `/auth/logout` | No | Revokes and clears the refresh token cookie |
 | `POST` | `/auth/refresh` | Cookie | Issues a new access token and rotates the refresh token (rate limited) |
-| `GET` | `/auth/me` | Yes | Returns the authenticated user's ID |
+| `GET` | `/auth/me` | Yes | Returns the authenticated user's profile |
 
 **POST /auth/login**
 ```json
 { "email": "user@example.com", "password": "secret" }
 ```
 Response: `{ "accessToken": "..." }`
+
+**GET /auth/me**
+Response: `{ "id": 1, "email": "user@example.com", "isAdmin": false, "created": "2024-01-15T10:22:05Z" }`
+
+`isAdmin` reflects whether the authenticated user's email is currently listed in `ADMIN_EMAILS`. It is computed on every request, so it updates immediately if `ADMIN_EMAILS` changes without a restart.
 
 **Refresh token rotation:** every successful `/auth/refresh` call issues a brand new refresh token (re-setting the cookie) and immediately invalidates the one that was just used. This shrinks the window a stolen refresh token stays useful for, but has two consequences worth knowing before integrating:
 - A client must persist the **new** `Set-Cookie` from every refresh response — reusing an old refresh token (e.g. from a stale in-memory copy) will fail with `401`.
@@ -104,7 +109,15 @@ Users can update or delete their own account; admins can also act on any account
 ```
 Password must be 8-128 characters. Response: `{ "message": "...", "user": { "id": 1, "email": "...", "created": "..." } }`
 
-**GET /users** and **GET /logs** accept `?limit=` (default 50, max 200) and `?offset=` (default 0) query params.
+**GET /users** and **GET /logs** accept `?limit=` (default 50, max 200) and `?offset=` (default 0) query params and return a paginated envelope:
+```json
+{
+  "data": [...],
+  "total": 42,
+  "limit": 50,
+  "offset": 0
+}
+```
 
 **PUT /users/update/:id**
 ```json

@@ -11,27 +11,33 @@ const { usersDb } = dbs;
 // with malformed input will throw rather than return a clean validation
 // error.
 
+const stmtGetAll = usersDb.prepare('SELECT id, email, created FROM users ORDER BY id LIMIT ? OFFSET ?');
+const stmtCount = usersDb.prepare('SELECT COUNT(*) AS count FROM users');
+const stmtGetById = usersDb.prepare('SELECT id, email, created FROM users WHERE id = ?');
+const stmtInsert = usersDb.prepare('INSERT INTO users (email, hash, salt) VALUES (?, ?, ?) RETURNING id, email, created');
+const stmtUpdateEmail = usersDb.prepare('UPDATE users SET email = ? WHERE id = ? RETURNING id, email, created');
+const stmtDelete = usersDb.prepare('DELETE FROM users WHERE id = ?');
+const stmtGetTokenVersion = usersDb.prepare('SELECT token_version FROM users WHERE id = ?');
+const stmtBumpTokenVersion = usersDb.prepare('UPDATE users SET token_version = token_version + 1 WHERE id = ? RETURNING token_version');
+
 export function getAll(limit = 50, offset = 0) {
-  return usersDb.prepare('SELECT id, email, created FROM users ORDER BY id LIMIT ? OFFSET ?').all(limit, offset);
+  return stmtGetAll.all(limit, offset);
 }
 
 export function count() {
-  return usersDb.prepare('SELECT COUNT(*) AS count FROM users').get().count;
+  return stmtCount.get().count;
 }
 
 export function getById(id) {
-  return usersDb.prepare('SELECT id, email, created FROM users WHERE id = ?').get(id);
+  return stmtGetById.get(id);
 }
 
 export async function register(email, password) {
   const normalizedEmail = email.toLowerCase();
   const { salt, hash } = await hashPassword(password);
-  const stmt = usersDb.prepare(
-    'INSERT INTO users (email, hash, salt) VALUES (?, ?, ?) RETURNING id, email, created'
-  );
 
   try {
-    const user = stmt.get(normalizedEmail, hash, salt);
+    const user = stmtInsert.get(normalizedEmail, hash, salt);
 
     console.log(`User "${normalizedEmail}" registered.`);
 
@@ -49,10 +55,9 @@ export async function register(email, password) {
 
 export function updateEmailById(id, newEmail) {
   const normalizedEmail = newEmail.toLowerCase();
-  const stmt = usersDb.prepare('UPDATE users SET email = ? WHERE id = ? RETURNING id, email, created');
 
   try {
-    const updatedUser = stmt.get(normalizedEmail, id);
+    const updatedUser = stmtUpdateEmail.get(normalizedEmail, id);
 
     if (!updatedUser) {
       throw new NotFoundError(`No user found with id "${id}".`);
@@ -73,10 +78,8 @@ export function updateEmailById(id, newEmail) {
 }
 
 export function deleteById(id) {
-  const stmt = usersDb.prepare('DELETE FROM users WHERE id = ?');
-
   try {
-    const info = stmt.run(id);
+    const info = stmtDelete.run(id);
 
     if (info.changes === 0) {
       throw new NotFoundError(`No user found with id "${id}".`);
@@ -92,14 +95,11 @@ export function deleteById(id) {
 }
 
 export function getTokenVersion(id) {
-  const row = usersDb.prepare('SELECT token_version FROM users WHERE id = ?').get(id);
+  const row = stmtGetTokenVersion.get(id);
   return row ? row.token_version : null;
 }
 
 export function bumpTokenVersion(id) {
-  const row = usersDb
-    .prepare('UPDATE users SET token_version = token_version + 1 WHERE id = ? RETURNING token_version')
-    .get(id);
-
+  const row = stmtBumpTokenVersion.get(id);
   return row ? row.token_version : null;
 }

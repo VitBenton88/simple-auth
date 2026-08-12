@@ -7,24 +7,28 @@ const { logsDb } = dbs;
 // (logged to stderr) rather than propagated. Reads deliberately do NOT do
 // this — see getAll()/getById() below — since callers need to be able to
 // tell "no logs" apart from "the logs DB is broken".
-export function create(email, success, message) {
-  const stmt = logsDb.prepare('INSERT INTO logs (email, success, message) VALUES (?, ?, ?)');
 
+const stmtCreate = logsDb.prepare('INSERT INTO logs (email, success, message) VALUES (?, ?, ?)');
+const stmtGetAll = logsDb.prepare('SELECT * FROM logs ORDER BY timestamp DESC, id DESC LIMIT ? OFFSET ?');
+const stmtCount = logsDb.prepare('SELECT COUNT(*) AS count FROM logs');
+const stmtGetById = logsDb.prepare('SELECT * FROM logs WHERE id = ?');
+
+export function create(email, success, message) {
   try {
-    stmt.run(email, success, message);
+    stmtCreate.run(email, success, message);
   } catch (e) {
     console.error('Log creation failed: ', e.message);
   }
 }
 
 export function getAll(limit = 50, offset = 0) {
-  return logsDb.prepare('SELECT * FROM logs ORDER BY timestamp DESC, id DESC LIMIT ? OFFSET ?').all(limit, offset);
+  return stmtGetAll.all(limit, offset);
 }
 
 export function count() {
-  return logsDb.prepare('SELECT COUNT(*) AS count FROM logs').get().count;
+  return stmtCount.get().count;
 }
 
 export function getById(id) {
-  return logsDb.prepare('SELECT * FROM logs WHERE id = ?').get(id);
+  return stmtGetById.get(id);
 }

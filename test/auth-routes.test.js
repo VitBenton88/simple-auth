@@ -282,7 +282,11 @@ test('GET /auth/me reports isAdmin true for an ADMIN_EMAILS address', async () =
 
     assert.equal(body.isAdmin, true);
   } finally {
-    process.env.ADMIN_EMAILS = originalAdmins;
+    if (originalAdmins === undefined) {
+      delete process.env.ADMIN_EMAILS;
+    } else {
+      process.env.ADMIN_EMAILS = originalAdmins;
+    }
     server.close();
   }
 });

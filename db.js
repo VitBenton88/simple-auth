@@ -20,7 +20,7 @@ logsDb.prepare(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     email TEXT,
     success INTEGER NOT NULL CHECK (success IN (0, 1)),
-    timestamp TEXT NOT NULL DEFAULT (datetime('now')),
+    timestamp TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
     message TEXT
   )
 `).run();
@@ -35,7 +35,7 @@ usersDb.prepare(`
     email TEXT NOT NULL UNIQUE,
     hash TEXT NOT NULL,
     salt TEXT NOT NULL,
-    created TEXT NOT NULL DEFAULT (datetime('now'))
+    created TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
   )
 `).run();
 
@@ -47,6 +47,18 @@ const userColumns = usersDb.prepare('PRAGMA table_info(users)').all().map((c) =>
 if (!userColumns.includes('token_version')) {
   usersDb.prepare('ALTER TABLE users ADD COLUMN token_version INTEGER NOT NULL DEFAULT 0').run();
 }
+
+// Normalize any pre-existing 'YYYY-MM-DD HH:MM:SS' timestamps to ISO 8601
+// 'YYYY-MM-DDTHH:MM:SSZ' so clients can parse them with new Date() cross-browser.
+usersDb.prepare(`
+  UPDATE users SET created = strftime('%Y-%m-%dT%H:%M:%SZ', created)
+  WHERE created NOT LIKE '%T%'
+`).run();
+
+logsDb.prepare(`
+  UPDATE logs SET timestamp = strftime('%Y-%m-%dT%H:%M:%SZ', timestamp)
+  WHERE timestamp NOT LIKE '%T%'
+`).run();
 
 export function closeDb() {
   usersDb.close();

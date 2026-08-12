@@ -44,7 +44,7 @@ export function requireAuth(req, res, next) {
     return res.status(401).json({ error: 'Unauthorized: User no longer exists' });
   }
 
-  req.user = { id: user.id, email: user.email, isAdmin: isAdminEmail(user.email) };
+  req.user = { id: user.id, email: user.email, isAdmin: isAdminEmail(user.email), created: user.created };
   next();
 }
 

@@ -230,3 +230,59 @@ test('refresh cookie is not marked secure when COOKIE_SECURE=false', async () =>
     server.close();
   }
 });
+
+test('GET /auth/me returns email and created alongside id, with isAdmin false for a non-admin', async () => {
+  const { server, base } = await startServer();
+
+  try {
+    const email = uniqueEmail('me-shape');
+    await register(email, 'a-strong-password');
+
+    const loginRes = await fetch(`${base}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'a-strong-password' }),
+    });
+    const { accessToken } = await loginRes.json();
+
+    const meRes = await fetch(`${base}/auth/me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const body = await meRes.json();
+
+    assert.equal(meRes.status, 200);
+    assert.equal(body.email, email);
+    assert.equal(body.isAdmin, false);
+    assert.equal(typeof body.created, 'string');
+  } finally {
+    server.close();
+  }
+});
+
+test('GET /auth/me reports isAdmin true for an ADMIN_EMAILS address', async () => {
+  const { server, base } = await startServer();
+  const originalAdmins = process.env.ADMIN_EMAILS;
+
+  try {
+    const email = uniqueEmail('me-admin');
+    await register(email, 'a-strong-password');
+    process.env.ADMIN_EMAILS = email;
+
+    const loginRes = await fetch(`${base}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'a-strong-password' }),
+    });
+    const { accessToken } = await loginRes.json();
+
+    const meRes = await fetch(`${base}/auth/me`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    const body = await meRes.json();
+
+    assert.equal(body.isAdmin, true);
+  } finally {
+    process.env.ADMIN_EMAILS = originalAdmins;
+    server.close();
+  }
+});

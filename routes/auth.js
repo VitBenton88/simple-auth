@@ -115,7 +115,8 @@ export function refreshHandler(req, res) {
 }
 
 export function meHandler(req, res) {
-  res.json({ id: req.user.id });
+  const { id, email, isAdmin, created } = req.user;
+  res.json({ id, email, isAdmin, created });
 }
 
 router.post('/login', loginLimiter, loginHandler);
